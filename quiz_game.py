@@ -88,8 +88,20 @@ class QuizGame:
         self.save()
         print(f"\n✅ 퀴즈가 추가되었습니다! (총 {len(self.quizzes)}개)\n")
 
-    def list_quizzes(self) -> None:
-        self._not_ready()
+    def list_quizzes(self) -> bool:
+        """등록된 퀴즈 문제를 번호와 함께 출력한다. 퀴즈가 없으면 False."""
+        if not self.quizzes:
+            print("📭 등록된 퀴즈가 없습니다.\n")
+            return False
+
+        print(f"📋 등록된 퀴즈 목록 (총 {len(self.quizzes)}개)\n")
+        print(THIN_LINE)
+        for number, quiz in enumerate(self.quizzes, start=1):
+            hint_mark = " 💡" if quiz.has_hint() else ""
+            print(f"[{number}] {quiz.question}{hint_mark}")
+        print(THIN_LINE)
+        print("💡 표시는 힌트가 있는 문제입니다.\n")
+        return True
 
     def show_score(self) -> None:
         self._not_ready()
