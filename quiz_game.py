@@ -2,7 +2,7 @@
 
 from default_quizzes import get_default_quizzes
 from input_utils import read_int, read_line, read_text
-from quiz import Quiz
+from quiz import CHOICE_COUNT, Quiz
 from quiz_session import QuizSession
 from storage import StateStorage
 
@@ -11,9 +11,17 @@ THIN_LINE = "-" * 40
 
 
 class QuizGame:
-    """메뉴를 보여주고 사용자의 선택에 따라 각 기능을 실행한다."""
+    """퀴즈 목록과 점수 기록을 보관하고, 메뉴에 따라 각 기능을 실행한다.
+
+    역할 분담
+    - Quiz         : 문제 1개 (출력, 정답 확인)
+    - QuizSession  : 퀴즈 1회 진행 (출제, 힌트, 채점)
+    - StateStorage : state.json 읽기/쓰기
+    - QuizGame     : 메뉴 흐름, 퀴즈 관리, 점수 기록, 저장 시점 결정
+    """
 
     TITLE = "🎯 MZ 신조어 퀴즈 게임 🎯"
+    HISTORY_DISPLAY_LIMIT = 10
 
     def __init__(self, storage: StateStorage | None = None) -> None:
         self.storage = storage or StateStorage()
@@ -37,7 +45,7 @@ class QuizGame:
     # 실행 흐름
     # ------------------------------------------------------------------
     def run(self) -> None:
-        """메인 루프. Ctrl+C / 입력 스트림 종료 시에도 안전하게 종료한다."""
+        """메인 루프. Ctrl+C / 입력 스트림 종료 시에도 저장 후 안전하게 종료한다."""
         self.show_title()
         self.load()
         try:
@@ -62,45 +70,35 @@ class QuizGame:
             print(f"{number}. {label}")
         print(LINE)
 
+    def quit(self) -> None:
+        self.save()
+        print("👋 게임을 종료합니다. 다음에 또 만나요!")
+        self.running = False
+
     # ------------------------------------------------------------------
-    # 메뉴 기능 (이후 커밋에서 구현)
+    # 메뉴 기능
     # ------------------------------------------------------------------
     def play_quiz(self) -> None:
-        """문제 수를 고른 뒤 QuizSession으로 퀴즈를 진행한다."""
+        """문제 수를 고른 뒤 QuizSession으로 퀴즈를 진행하고 결과를 기록한다."""
         if not self.quizzes:
             print("📭 등록된 퀴즈가 없습니다. '퀴즈 추가'에서 먼저 퀴즈를 등록하세요.\n")
             return
 
         count = self._ask_question_count()
-        session = QuizSession(self.quizzes, count=count)
-        result = session.play()
-        self._record_result(result)
+        result = QuizSession(self.quizzes, count=count).play()
 
-    def _record_result(self, result: dict) -> None:
-        """게임 결과를 기록하고 최고 점수와 비교해 갱신한다."""
-        self.history.append(result)
-
-        if self.best_score is None or result["score"] > self.best_score:
-            self.best_score = result["score"]
-            self.best_record = result
+        if self._record_result(result):
             print("🎉 새로운 최고 점수입니다!\n")
         else:
             print(f"🏆 현재 최고 점수: {self.best_score}점\n")
-
         self.save()
-
-    def _ask_question_count(self) -> int:
-        total = len(self.quizzes)
-        if total == 1:
-            return 1
-        return read_int(f"몇 문제를 풀까요? (1-{total}): ", 1, total)
 
     def add_quiz(self) -> None:
         """문제, 선택지 4개, 정답 번호, 힌트(선택)를 입력받아 퀴즈를 등록한다."""
         print("📌 새로운 퀴즈를 추가합니다.\n")
         question = read_text("문제를 입력하세요: ")
-        choices = [read_text(f"선택지 {number}: ") for number in range(1, 5)]
-        answer = read_int("정답 번호 (1-4): ", 1, 4)
+        choices = [read_text(f"선택지 {number}: ") for number in range(1, CHOICE_COUNT + 1)]
+        answer = read_int(f"정답 번호 (1-{CHOICE_COUNT}): ", 1, CHOICE_COUNT)
         hint = read_line("힌트 (없으면 Enter): ")
 
         self.quizzes.append(Quiz(question, choices, answer, hint))
@@ -135,11 +133,6 @@ class QuizGame:
         )
         print(f"📅 기록 일시: {self._format_time(record['played_at'])}\n")
 
-    @staticmethod
-    def _format_time(iso_text: str) -> str:
-        """'2026-11-20T19:00:00' → '2026-11-20 19:00'."""
-        return iso_text.replace("T", " ")[:16]
-
     def delete_quiz(self) -> None:
         """목록에서 번호를 골라 확인 후 퀴즈를 삭제한다. 0을 입력하면 취소."""
         if not self.list_quizzes():
@@ -151,8 +144,7 @@ class QuizGame:
             print("↩️ 삭제를 취소했습니다.\n")
             return
 
-        target = self.quizzes[number - 1]
-        print(f"\n[{number}] {target.question}")
+        print(f"\n[{number}] {self.quizzes[number - 1].question}")
         if not self._confirm("이 퀴즈를 삭제할까요? (y/n): "):
             print("↩️ 삭제를 취소했습니다.\n")
             return
@@ -161,21 +153,8 @@ class QuizGame:
         self.save()
         print(f"🗑️ 퀴즈가 삭제되었습니다. (남은 퀴즈 {len(self.quizzes)}개)\n")
 
-    @staticmethod
-    def _confirm(prompt: str) -> bool:
-        """y/n 입력을 받아 True/False로 반환한다. 그 밖의 입력은 다시 묻는다."""
-        while True:
-            answer = read_line(prompt).lower()
-            if answer in ("y", "yes", "ㅛ"):
-                return True
-            if answer in ("n", "no", "ㅜ"):
-                return False
-            print("⚠️ y 또는 n을 입력하세요.")
-
-    HISTORY_DISPLAY_LIMIT = 10
-
     def show_history(self) -> None:
-        """지금까지의 게임 기록을 최신순으로 보여준다 (최근 10개)."""
+        """지금까지의 게임 기록을 최신순으로 보여준다."""
         if not self.history:
             print("📭 아직 게임 기록이 없습니다. '퀴즈 풀기'로 첫 기록을 남겨보세요!\n")
             return
@@ -190,21 +169,56 @@ class QuizGame:
         print("일시" + " " * 18 + "정답  힌트     점수")
         print(THIN_LINE)
         for record in recent:
-            answered = f"{record['correct']}/{record['total']}"
-            best_mark = " 🏆" if record == self.best_record else ""
-            print(
-                f"{self._format_time(record['played_at']):<16}  "
-                f"{answered:>8}  {record['hints_used']:>4}  {record['score']:>5}점{best_mark}"
-            )
+            print(self._format_history_row(record))
         print(THIN_LINE)
         if total_games > self.HISTORY_DISPLAY_LIMIT:
             print(f"※ 최근 {self.HISTORY_DISPLAY_LIMIT}개 기록만 표시합니다.")
         print()
 
-    def quit(self) -> None:
-        self.save()
-        print("👋 게임을 종료합니다. 다음에 또 만나요!")
-        self.running = False
+    # ------------------------------------------------------------------
+    # 점수 기록
+    # ------------------------------------------------------------------
+    def _record_result(self, result: dict) -> bool:
+        """게임 결과를 기록에 추가하고 최고 점수를 갱신한다. 새 최고 점수면 True."""
+        self.history.append(result)
+        if self.best_score is None or result["score"] > self.best_score:
+            self.best_score = result["score"]
+            self.best_record = result
+            return True
+        return False
+
+    # ------------------------------------------------------------------
+    # 입력 / 출력 보조
+    # ------------------------------------------------------------------
+    def _ask_question_count(self) -> int:
+        total = len(self.quizzes)
+        if total == 1:
+            return 1
+        return read_int(f"몇 문제를 풀까요? (1-{total}): ", 1, total)
+
+    @staticmethod
+    def _confirm(prompt: str) -> bool:
+        """y/n 입력을 받아 True/False로 반환한다. 그 밖의 입력은 다시 묻는다."""
+        while True:
+            answer = read_line(prompt).lower()
+            if answer in ("y", "yes", "ㅛ"):
+                return True
+            if answer in ("n", "no", "ㅜ"):
+                return False
+            print("⚠️ y 또는 n을 입력하세요.")
+
+    def _format_history_row(self, record: dict) -> str:
+        answered = f"{record['correct']}/{record['total']}"
+        best_mark = " 🏆" if record == self.best_record else ""
+        return (
+            f"{self._format_time(record['played_at']):<16}  "
+            f"{answered:>8}  {record['hints_used']:>4}  {record['score']:>5}점{best_mark}"
+        )
+
+    @staticmethod
+    def _format_time(iso_text: str) -> str:
+        """'2026-11-20T19:00:00' → '2026-11-20 19:00'."""
+        return iso_text.replace("T", " ")[:16]
 
     # ------------------------------------------------------------------
     # 파일 저장 / 불러오기 (state.json)
@@ -235,13 +249,14 @@ class QuizGame:
             print("⚠️ 데이터 파일을 읽을 수 없어 기본 퀴즈로 시작합니다. (이번 실행 내용은 저장되지 않을 수 있습니다)")
 
     def save(self) -> bool:
-        """현재 상태를 state.json에 저장한다."""
+        """현재 상태를 state.json에 저장한다. 실패하면 안내 후 False."""
         if self.storage.save(self.to_state()):
             return True
         print("⚠️ 데이터를 파일에 저장하지 못했습니다.")
         return False
 
     def to_state(self) -> dict:
+        """현재 게임 상태를 state.json 스키마의 dict로 변환한다."""
         return {
             "version": 1,
             "quizzes": [quiz.to_dict() for quiz in self.quizzes],
@@ -262,7 +277,3 @@ class QuizGame:
         self.best_score = None
         self.best_record = None
         self.history = []
-
-    @staticmethod
-    def _not_ready() -> None:
-        print("🚧 준비 중인 기능입니다.\n")
