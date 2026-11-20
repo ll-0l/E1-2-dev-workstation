@@ -1,6 +1,9 @@
 """게임 전체를 관리하는 QuizGame 클래스."""
 
+from default_quizzes import get_default_quizzes
 from input_utils import read_int
+from quiz import Quiz
+from quiz_session import QuizSession
 
 LINE = "=" * 40
 THIN_LINE = "-" * 40
@@ -12,6 +15,7 @@ class QuizGame:
     TITLE = "🎯 MZ 신조어 퀴즈 게임 🎯"
 
     def __init__(self) -> None:
+        self.quizzes: list[Quiz] = get_default_quizzes()
         self.running = True
         # (메뉴 이름, 실행할 메서드) — 번호는 순서대로 1부터 부여
         self.menu_items = [
@@ -56,7 +60,21 @@ class QuizGame:
     # 메뉴 기능 (이후 커밋에서 구현)
     # ------------------------------------------------------------------
     def play_quiz(self) -> None:
-        self._not_ready()
+        """문제 수를 고른 뒤 QuizSession으로 퀴즈를 진행한다."""
+        if not self.quizzes:
+            print("📭 등록된 퀴즈가 없습니다. '퀴즈 추가'에서 먼저 퀴즈를 등록하세요.\n")
+            return
+
+        count = self._ask_question_count()
+        session = QuizSession(self.quizzes, count=count)
+        session.play()
+        print()
+
+    def _ask_question_count(self) -> int:
+        total = len(self.quizzes)
+        if total == 1:
+            return 1
+        return read_int(f"몇 문제를 풀까요? (1-{total}): ", 1, total)
 
     def add_quiz(self) -> None:
         self._not_ready()
