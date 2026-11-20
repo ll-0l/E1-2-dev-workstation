@@ -4,6 +4,7 @@ from default_quizzes import get_default_quizzes
 from input_utils import read_int, read_line, read_text
 from quiz import Quiz
 from quiz_session import QuizSession
+from storage import StateStorage
 
 LINE = "=" * 40
 THIN_LINE = "-" * 40
@@ -14,7 +15,8 @@ class QuizGame:
 
     TITLE = "🎯 MZ 신조어 퀴즈 게임 🎯"
 
-    def __init__(self) -> None:
+    def __init__(self, storage: StateStorage | None = None) -> None:
+        self.storage = storage or StateStorage()
         self.quizzes: list[Quiz] = get_default_quizzes()
         self.best_score: int | None = None      # 0~100점, 아직 플레이 전이면 None
         self.best_record: dict | None = None    # 최고 점수를 기록한 게임의 상세 기록
@@ -37,6 +39,7 @@ class QuizGame:
     def run(self) -> None:
         """메인 루프. Ctrl+C / 입력 스트림 종료 시에도 안전하게 종료한다."""
         self.show_title()
+        self.load()
         try:
             while self.running:
                 self.show_menu()
@@ -149,10 +152,61 @@ class QuizGame:
         self.running = False
 
     # ------------------------------------------------------------------
-    # 저장 (StateStorage 연동 전 임시)
+    # 파일 저장 / 불러오기 (state.json)
     # ------------------------------------------------------------------
-    def save(self) -> None:
-        pass
+    def load(self) -> None:
+        """state.json을 읽어 게임 상태를 복원한다. 실패하면 기본 퀴즈로 시작한다."""
+        state, status = self.storage.load()
+
+        if status == "loaded" and state is not None:
+            try:
+                self._apply_state(state)
+            except ValueError:
+                status = "corrupted"
+            else:
+                best = f"{self.best_score}점" if self.best_score is not None else "기록 없음"
+                print(f"📂 저장된 데이터를 불러왔습니다. (퀴즈 {len(self.quizzes)}개, 최고점수 {best})")
+                return
+
+        if status == "missing":
+            print(f"📂 저장된 데이터가 없어 기본 퀴즈 {len(self.quizzes)}개로 시작합니다.")
+            self.save()
+        elif status == "corrupted":
+            print("⚠️ 데이터 파일이 손상되어 기본 퀴즈로 복구합니다. (원본은 state.json.bak에 백업)")
+            self._reset_state()
+            self.save()
+        else:
+            # 읽기 오류: 기존 파일을 덮어쓰지 않도록 저장하지 않는다
+            print("⚠️ 데이터 파일을 읽을 수 없어 기본 퀴즈로 시작합니다. (이번 실행 내용은 저장되지 않을 수 있습니다)")
+
+    def save(self) -> bool:
+        """현재 상태를 state.json에 저장한다."""
+        if self.storage.save(self.to_state()):
+            return True
+        print("⚠️ 데이터를 파일에 저장하지 못했습니다.")
+        return False
+
+    def to_state(self) -> dict:
+        return {
+            "version": 1,
+            "quizzes": [quiz.to_dict() for quiz in self.quizzes],
+            "best_score": self.best_score,
+            "best_record": self.best_record,
+            "history": self.history,
+        }
+
+    def _apply_state(self, state: dict) -> None:
+        """state dict를 게임 속성에 반영한다. 퀴즈 형식이 틀리면 ValueError."""
+        self.quizzes = [Quiz.from_dict(item) for item in state["quizzes"]]
+        self.best_score = state["best_score"]
+        self.best_record = state["best_record"]
+        self.history = state["history"]
+
+    def _reset_state(self) -> None:
+        self.quizzes = get_default_quizzes()
+        self.best_score = None
+        self.best_record = None
+        self.history = []
 
     @staticmethod
     def _not_ready() -> None:
