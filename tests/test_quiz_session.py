@@ -36,6 +36,10 @@ class QuizSessionTest(unittest.TestCase):
         self.assertEqual(50, QuizSession.calculate_score(3, 2, 4))
         self.assertEqual(0, QuizSession.calculate_score(0, 0, 4))
 
+    def test_score_uses_python_round_at_half_point_boundaries(self) -> None:
+        self.assertEqual(62, QuizSession.calculate_score(5, 0, 8))
+        self.assertEqual(38, QuizSession.calculate_score(3, 0, 8))
+
     @patch("quiz_session.datetime")
     @patch("input_utils.read_int", side_effect=["h", "h", 1, 2, 4])
     def test_play_counts_hint_once_and_returns_history_record(self, _read_int, mock_datetime) -> None:
