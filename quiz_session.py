@@ -70,7 +70,7 @@ class QuizSession:
                 else:
                     print("✅ 정답입니다!")
             else:
-                print(f"❌ 오답입니다. 정답은 {quiz.answer}번 '{quiz.choices[quiz.answer - 1]}'입니다.")
+                print(f"❌ 오답입니다. 정답은 {quiz.answer}번 ({quiz.choices[quiz.answer - 1]})입니다.")
 
         score = self.calculate_score(correct, hinted_correct, total)
         result = {
