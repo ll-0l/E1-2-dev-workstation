@@ -16,6 +16,9 @@ class QuizGame:
 
     def __init__(self) -> None:
         self.quizzes: list[Quiz] = get_default_quizzes()
+        self.best_score: int | None = None      # 0~100점, 아직 플레이 전이면 None
+        self.best_record: dict | None = None    # 최고 점수를 기록한 게임의 상세 기록
+        self.history: list[dict] = []           # 모든 게임 기록
         self.running = True
         # (메뉴 이름, 실행할 메서드) — 번호는 순서대로 1부터 부여
         self.menu_items = [
@@ -67,8 +70,21 @@ class QuizGame:
 
         count = self._ask_question_count()
         session = QuizSession(self.quizzes, count=count)
-        session.play()
-        print()
+        result = session.play()
+        self._record_result(result)
+
+    def _record_result(self, result: dict) -> None:
+        """게임 결과를 기록하고 최고 점수와 비교해 갱신한다."""
+        self.history.append(result)
+
+        if self.best_score is None or result["score"] > self.best_score:
+            self.best_score = result["score"]
+            self.best_record = result
+            print("🎉 새로운 최고 점수입니다!\n")
+        else:
+            print(f"🏆 현재 최고 점수: {self.best_score}점\n")
+
+        self.save()
 
     def _ask_question_count(self) -> int:
         total = len(self.quizzes)
@@ -104,7 +120,22 @@ class QuizGame:
         return True
 
     def show_score(self) -> None:
-        self._not_ready()
+        """최고 점수와 그 기록의 상세 내용을 출력한다."""
+        if self.best_score is None or self.best_record is None:
+            print("📭 아직 퀴즈를 풀지 않았습니다. '퀴즈 풀기'로 첫 기록을 남겨보세요!\n")
+            return
+
+        record = self.best_record
+        print(
+            f"🏆 최고 점수: {self.best_score}점 "
+            f"({record['total']}문제 중 {record['correct']}문제 정답, 힌트 {record['hints_used']}회)"
+        )
+        print(f"📅 기록 일시: {self._format_time(record['played_at'])}\n")
+
+    @staticmethod
+    def _format_time(iso_text: str) -> str:
+        """'2026-11-20T19:00:00' → '2026-11-20 19:00'."""
+        return iso_text.replace("T", " ")[:16]
 
     def delete_quiz(self) -> None:
         self._not_ready()
