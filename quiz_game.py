@@ -141,7 +141,36 @@ class QuizGame:
         return iso_text.replace("T", " ")[:16]
 
     def delete_quiz(self) -> None:
-        self._not_ready()
+        """목록에서 번호를 골라 확인 후 퀴즈를 삭제한다. 0을 입력하면 취소."""
+        if not self.list_quizzes():
+            return
+
+        total = len(self.quizzes)
+        number = read_int(f"삭제할 퀴즈 번호 (1-{total}, 취소: 0): ", 0, total)
+        if number == 0:
+            print("↩️ 삭제를 취소했습니다.\n")
+            return
+
+        target = self.quizzes[number - 1]
+        print(f"\n[{number}] {target.question}")
+        if not self._confirm("이 퀴즈를 삭제할까요? (y/n): "):
+            print("↩️ 삭제를 취소했습니다.\n")
+            return
+
+        self.quizzes.pop(number - 1)
+        self.save()
+        print(f"🗑️ 퀴즈가 삭제되었습니다. (남은 퀴즈 {len(self.quizzes)}개)\n")
+
+    @staticmethod
+    def _confirm(prompt: str) -> bool:
+        """y/n 입력을 받아 True/False로 반환한다. 그 밖의 입력은 다시 묻는다."""
+        while True:
+            answer = read_line(prompt).lower()
+            if answer in ("y", "yes", "ㅛ"):
+                return True
+            if answer in ("n", "no", "ㅜ"):
+                return False
+            print("⚠️ y 또는 n을 입력하세요.")
 
     def show_history(self) -> None:
         self._not_ready()
