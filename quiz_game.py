@@ -172,8 +172,34 @@ class QuizGame:
                 return False
             print("⚠️ y 또는 n을 입력하세요.")
 
+    HISTORY_DISPLAY_LIMIT = 10
+
     def show_history(self) -> None:
-        self._not_ready()
+        """지금까지의 게임 기록을 최신순으로 보여준다 (최근 10개)."""
+        if not self.history:
+            print("📭 아직 게임 기록이 없습니다. '퀴즈 풀기'로 첫 기록을 남겨보세요!\n")
+            return
+
+        total_games = len(self.history)
+        average = sum(record["score"] for record in self.history) / total_games
+        recent = list(reversed(self.history))[: self.HISTORY_DISPLAY_LIMIT]
+
+        print(f"📜 게임 기록 (총 {total_games}회, 평균 {average:.1f}점)\n")
+        print(THIN_LINE)
+        # 한글은 터미널에서 2칸을 차지하므로 머리글은 공백을 직접 맞춘다
+        print("일시" + " " * 18 + "정답  힌트     점수")
+        print(THIN_LINE)
+        for record in recent:
+            answered = f"{record['correct']}/{record['total']}"
+            best_mark = " 🏆" if record == self.best_record else ""
+            print(
+                f"{self._format_time(record['played_at']):<16}  "
+                f"{answered:>8}  {record['hints_used']:>4}  {record['score']:>5}점{best_mark}"
+            )
+        print(THIN_LINE)
+        if total_games > self.HISTORY_DISPLAY_LIMIT:
+            print(f"※ 최근 {self.HISTORY_DISPLAY_LIMIT}개 기록만 표시합니다.")
+        print()
 
     def quit(self) -> None:
         self.save()
