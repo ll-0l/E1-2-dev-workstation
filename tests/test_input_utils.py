@@ -1,0 +1,36 @@
+import unittest
+from unittest.mock import patch
+
+import input_utils
+
+
+class InputUtilsTest(unittest.TestCase):
+    @patch("builtins.input", return_value="  내용  ")
+    def test_read_line_strips_input(self, mock_input) -> None:
+        self.assertEqual("내용", input_utils.read_line("입력: "))
+        mock_input.assert_called_once_with("입력: ")
+
+    @patch("builtins.input", side_effect=["", "  답  "])
+    def test_read_text_retries_empty_input(self, _mock_input) -> None:
+        with patch("builtins.print") as mock_print:
+            self.assertEqual("답", input_utils.read_text("입력: "))
+        mock_print.assert_called_once_with("⚠️ 내용을 입력하세요.")
+
+    @patch("builtins.input", side_effect=["", "abc", "5", " H "])
+    def test_read_int_retries_and_accepts_keyword_case_insensitively(self, _mock_input) -> None:
+        with patch("builtins.print") as mock_print:
+            self.assertEqual("h", input_utils.read_int("입력: ", 1, 4, allow=("h",)))
+        self.assertEqual(3, mock_print.call_count)
+
+    @patch("builtins.input", return_value="3")
+    def test_read_int_returns_integer(self, _mock_input) -> None:
+        self.assertEqual(3, input_utils.read_int("입력: ", 1, 4))
+
+    @patch("builtins.input", side_effect=EOFError)
+    def test_read_line_propagates_eof(self, _mock_input) -> None:
+        with self.assertRaises(EOFError):
+            input_utils.read_line("입력: ")
+
+
+if __name__ == "__main__":
+    unittest.main()
