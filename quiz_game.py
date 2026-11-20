@@ -1,7 +1,7 @@
 """게임 전체를 관리하는 QuizGame 클래스."""
 
 from default_quizzes import get_default_quizzes
-from input_utils import read_int
+from input_utils import read_int, read_line, read_text
 from quiz import Quiz
 from quiz_session import QuizSession
 
@@ -77,7 +77,16 @@ class QuizGame:
         return read_int(f"몇 문제를 풀까요? (1-{total}): ", 1, total)
 
     def add_quiz(self) -> None:
-        self._not_ready()
+        """문제, 선택지 4개, 정답 번호, 힌트(선택)를 입력받아 퀴즈를 등록한다."""
+        print("📌 새로운 퀴즈를 추가합니다.\n")
+        question = read_text("문제를 입력하세요: ")
+        choices = [read_text(f"선택지 {number}: ") for number in range(1, 5)]
+        answer = read_int("정답 번호 (1-4): ", 1, 4)
+        hint = read_line("힌트 (없으면 Enter): ")
+
+        self.quizzes.append(Quiz(question, choices, answer, hint))
+        self.save()
+        print(f"\n✅ 퀴즈가 추가되었습니다! (총 {len(self.quizzes)}개)\n")
 
     def list_quizzes(self) -> None:
         self._not_ready()
