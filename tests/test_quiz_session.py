@@ -36,9 +36,12 @@ class QuizSessionTest(unittest.TestCase):
         self.assertEqual(50, QuizSession.calculate_score(3, 2, 4))
         self.assertEqual(0, QuizSession.calculate_score(0, 0, 4))
 
-    def test_score_uses_python_round_at_half_point_boundaries(self) -> None:
-        self.assertEqual(62, QuizSession.calculate_score(5, 0, 8))
-        self.assertEqual(38, QuizSession.calculate_score(3, 0, 8))
+    def test_score_rounds_half_up_at_half_point_boundaries(self) -> None:
+        # 사사오입: .5는 항상 올림 (내장 round()의 짝수 반올림과 다름)
+        self.assertEqual(63, QuizSession.calculate_score(5, 0, 8))   # 62.5
+        self.assertEqual(38, QuizSession.calculate_score(3, 0, 8))   # 37.5
+        self.assertEqual(13, QuizSession.calculate_score(1, 0, 8))   # 12.5
+        self.assertEqual(25, QuizSession.calculate_score(1, 1, 2))   # 25.0 (힌트 정답 1개)
 
     @patch("quiz_session.datetime")
     @patch("input_utils.read_int", side_effect=["h", "h", 1, 2, 4])
