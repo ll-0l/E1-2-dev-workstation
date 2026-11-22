@@ -119,7 +119,8 @@ class StateStorage:
 
 ### 3-7. 점수 규칙
 - 정답 = 배점 100%, **힌트를 보고 맞힌 문제 = 배점 50%**, 오답 = 0
-- `score = round(100 * (correct - 0.5 * hinted_correct) / total)`
+- `score = 100 * (correct - 0.5 * hinted_correct) / total`를 **사사오입**(.5는 항상 올림)한 정수
+  - 내장 `round()`는 짝수 반올림(62.5→62)이라 사용하지 않음. 정수 연산 `(200c - 100h + t) // (2t)`로 계산
 
 ## 4. 테스트 실행
 ```bash

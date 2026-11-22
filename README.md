@@ -75,8 +75,9 @@ python3 -m unittest discover -s tests -v
 ### 점수 규칙 (힌트 차감)
 - 문제를 풀다가 `h`를 입력하면 힌트를 볼 수 있습니다.
 - 힌트 없이 맞히면 배점의 100%, **힌트를 보고 맞히면 50%**, 틀리면 0점입니다.
-- `점수 = round(100 × (정답 수 − 0.5 × 힌트를 보고 맞힌 수) ÷ 출제 문항 수)`
-- 예: 5문제 중 4문제를 맞혔고 그중 1문제가 힌트 사용 → `round(100 × 3.5 ÷ 5)` = **70점**
+- `점수 = 100 × (정답 수 − 0.5 × 힌트를 보고 맞힌 수) ÷ 출제 문항 수`를 소수점 첫째 자리에서 **반올림(사사오입)**
+- 예: 5문제 중 4문제를 맞혔고 그중 1문제가 힌트 사용 → `100 × 3.5 ÷ 5` = **70점**
+- 예: 8문제 중 5문제 정답 → 62.5 → **63점**
 
 ### 입력·예외 처리
 | 상황 | 처리 |
@@ -103,7 +104,7 @@ E1-2-dev-workstation/
 ├── quiz_game.py         # QuizGame: 메뉴 흐름, 퀴즈 관리, 점수 기록, 저장 시점
 ├── storage.py           # StateStorage: state.json 읽기/쓰기, 손상 감지와 백업
 ├── input_utils.py       # 공통 입력 검증 함수 (공백 제거, 숫자/범위/빈 입력 처리)
-├── tests/               # unittest 단위 테스트 (30개)
+├── tests/               # unittest 단위 테스트 (38개)
 ├── docs/screenshots/    # 실행 화면 스크린샷
 ├── AGENTS.md, CLAUDE.md # 개발 협업 규칙 (아래 '개발 과정' 참고)
 ├── .gitignore
@@ -186,7 +187,7 @@ E1-2-dev-workstation/
 
 ## 8. 개발 과정 (Git)
 
-- 기능 단위로 커밋하고, `feature/quiz-model`, `feature/play-quiz`, `feature/storage`, `test/storage-integration` 브랜치에서 작업한 뒤 `main`에 `--no-ff`로 병합했습니다.
+- 기능 단위로 커밋하고, `feature/quiz-model`, `feature/play-quiz`, `feature/storage`, `test/storage-integration`, `fix/player-qa`, `test/quiz-management` 브랜치에서 작업한 뒤 `main`에 `--no-ff`로 병합했습니다.
 - 커밋 메시지는 `Feat:` / `Fix:` / `Docs:` / `Refactor:` / `Test:` / `Chore:` 형식을 따릅니다.
 - AI 코딩 에이전트 3개(Claude Code 2개, Codex 1개)가 담당 파일을 나눠 개발했습니다. 역할과 인터페이스 약속은 [AGENTS.md](AGENTS.md)에 있습니다.
 
