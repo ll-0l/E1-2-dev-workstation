@@ -194,3 +194,6 @@ E1-2-dev-workstation/
 ```bash
 git log --oneline --graph   # 브랜치·병합 이력 확인
 ```
+
+### clone / pull 실습
+- 이 섹션은 `git clone`으로 별도 폴더(`E1-2-dev-workstation-clone`)에 복제한 저장소에서 추가해 push했고, 원래 작업 폴더에서 `git pull`로 받아 반영을 확인했습니다.
