@@ -70,7 +70,7 @@ class QuizSession:
                 else:
                     print("✅ 정답입니다!")
             else:
-                print(f"❌ 오답입니다. 정답은 {quiz.answer}번 '{quiz.choices[quiz.answer - 1]}'입니다.")
+                print(f"❌ 오답입니다. 정답은 {quiz.answer}번 ({quiz.choices[quiz.answer - 1]})입니다.")
 
         score = self.calculate_score(correct, hinted_correct, total)
         result = {
@@ -86,10 +86,16 @@ class QuizSession:
 
     @staticmethod
     def calculate_score(correct: int, hinted_correct: int, total: int) -> int:
-        """정답 100%, 힌트 보고 맞힌 문제 50%로 0~100점을 계산한다."""
+        """정답 100%, 힌트 보고 맞힌 문제 50%로 0~100점을 계산한다.
+
+        소수점 첫째 자리에서 반올림(.5는 항상 올림)한다.
+        내장 round()는 .5를 짝수 쪽으로 보내 62.5→62, 37.5→38처럼 결과가 들쭉날쭉해서
+        정수 연산으로 계산한다: 100 * (correct - hinted/2) / total = (200c - 100h) / 2t
+        """
         if total <= 0:
             return 0
-        return round(100 * (correct - 0.5 * hinted_correct) / total)
+        doubled = 200 * correct - 100 * hinted_correct
+        return (doubled + total) // (2 * total)
 
     @staticmethod
     def _print_result(result: dict) -> None:
