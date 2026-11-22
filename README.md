@@ -185,6 +185,16 @@ E1-2-dev-workstation/
 |---|---|
 | ![퀴즈 추가](docs/screenshots/add_quiz.png) | ![점수 확인](docs/screenshots/score.png) |
 
+| 퀴즈 목록 | 게임 기록 |
+|---|---|
+| ![퀴즈 목록](docs/screenshots/list.png) | ![게임 기록](docs/screenshots/history.png) |
+
+| 개발 환경 | Git 이력 (`git log --oneline --graph`) |
+|---|---|
+| ![개발 환경](docs/screenshots/dev_env.png) | ![Git 이력](docs/screenshots/git_log.png) |
+
+> 첫 실행(퀴즈 추가) → 다시 실행(퀴즈 풀기, 최고 점수 33점 → 70점 갱신) → 다시 실행(저장 데이터 복원, 잘못된 입력 처리, 점수/목록/기록) 순서로 실제 실행한 터미널 출력을 캡처했습니다.
+
 ## 8. 개발 과정 (Git)
 
 - 기능 단위로 커밋하고, `feature/quiz-model`, `feature/play-quiz`, `feature/storage`, `test/storage-integration`, `fix/player-qa`, `test/quiz-management` 브랜치에서 작업한 뒤 `main`에 `--no-ff`로 병합했습니다.
