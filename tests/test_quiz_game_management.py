@@ -85,6 +85,24 @@ class QuizGameManagementTest(unittest.TestCase):
         self.assertIn("최근 10개 기록만 표시", output)
         self.assertIn("평균 27.5점", output)
 
+    def test_history_is_trimmed_to_max_but_best_record_is_kept(self) -> None:
+        game = QuizGame(storage=Mock())
+        game.HISTORY_MAX = 3
+
+        def record(score: int, minute: int) -> dict:
+            return {"played_at": f"2026-11-24T19:0{minute}:00", "total": 1, "correct": score // 100,
+                    "hints_used": 0, "hinted_correct": 0, "score": score}
+
+        game._record_result(record(100, 0))          # 최고 기록 (가장 오래됨)
+        for minute in range(1, 5):
+            game._record_result(record(0, minute))
+
+        self.assertEqual(3, len(game.history))
+        self.assertEqual(["2026-11-24T19:02:00", "2026-11-24T19:03:00", "2026-11-24T19:04:00"],
+                         [r["played_at"] for r in game.history])
+        self.assertEqual(100, game.best_score)
+        self.assertEqual("2026-11-24T19:00:00", game.best_record["played_at"])
+
     def test_record_result_updates_only_for_strictly_higher_score(self) -> None:
         first = make_record(0, 80)
         tied = make_record(1, 80)

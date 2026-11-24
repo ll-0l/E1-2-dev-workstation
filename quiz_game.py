@@ -22,13 +22,14 @@ class QuizGame:
 
     TITLE = "🎯 MZ 신조어 퀴즈 게임 🎯"
     HISTORY_DISPLAY_LIMIT = 10
+    HISTORY_MAX = 1000  # 보관할 최대 기록 수. 넘으면 오래된 기록부터 삭제(롤링)
 
     def __init__(self, storage: StateStorage | None = None) -> None:
         self.storage = storage or StateStorage()
         self.quizzes: list[Quiz] = get_default_quizzes()
         self.best_score: int | None = None      # 0~100점, 아직 플레이 전이면 None
         self.best_record: dict | None = None    # 최고 점수를 기록한 게임의 상세 기록
-        self.history: list[dict] = []           # 모든 게임 기록
+        self.history: list[dict] = []           # 게임 기록 (최근 HISTORY_MAX건)
         self.read_only = False                  # 보호 모드: 기존 파일을 지키기 위해 저장하지 않음
         self.running = True
         # (메뉴 이름, 실행할 메서드) — 번호는 순서대로 1부터 부여
@@ -188,6 +189,7 @@ class QuizGame:
     def _record_result(self, result: dict) -> bool:
         """게임 결과를 기록에 추가하고 최고 점수를 갱신한다. 새 최고 점수면 True."""
         self.history.append(result)
+        self._trim_history()
         if self.best_score is None or result["score"] > self.best_score:
             self.best_score = result["score"]
             self.best_record = result
@@ -292,6 +294,13 @@ class QuizGame:
         self.best_score = state["best_score"]
         self.best_record = state["best_record"]
         self.history = state["history"]
+        self._trim_history()
+
+    def _trim_history(self) -> None:
+        """기록이 HISTORY_MAX를 넘으면 오래된 것부터 지운다. 최고 기록(best_record)은 따로 보관되어 유지된다."""
+        overflow = len(self.history) - self.HISTORY_MAX
+        if overflow > 0:
+            del self.history[:overflow]
 
     def _reset_state(self) -> None:
         self.quizzes = get_default_quizzes()
