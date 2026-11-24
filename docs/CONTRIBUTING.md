@@ -16,6 +16,20 @@
 - 한 브랜치에는 **한 가지 목적**만 담습니다. 목적이 둘이면 브랜치를 나눕니다.
 - 커밋 메시지 접두어(`Feat:`/`Fix:`/`Test:`/`Refactor:`/`Docs:`/`Chore:`)는 브랜치 종류와 맞춥니다.
 
+### 커밋 메시지 템플릿
+저장소 루트의 [`.gitmessage`](../.gitmessage)를 한 번 등록하면 `git commit` 때마다 아래 틀이 열립니다.
+```bash
+git config commit.template .gitmessage
+```
+```text
+Feat: 퀴즈 삭제 기능 구현                         ← 제목: <종류>: <한 일> (50자 안팎)
+                                                  ← 빈 줄
+- 목록에서 번호 선택(0은 취소) 후 y/n 확인을 거쳐 삭제   ← 본문: 무엇을/왜, '- ' 목록
+- 삭제 결과를 state.json에 반영
+
+Refs: #12                                         ← 꼬리말(선택): 이슈 번호, 리뷰어
+```
+
 ## 2. 작업 흐름
 ```bash
 git checkout main && git pull                 # 1. 항상 최신 main에서 시작
@@ -25,10 +39,19 @@ python3 -m unittest discover -s tests         # 3. 전체 테스트 통과 확�
 git push -u origin feature/<이름>             # 4. 원격에 올림 → 리뷰 요청
 # --- 리뷰 통과 후 (병합 담당 Lead) ---
 git checkout main && git pull
-git merge --no-ff feature/<이름>              # 5. 병합 기록이 그래프에 남도록 --no-ff
+git merge --no-ff feature/<이름> -m "Merge branch 'feature/<이름>'" -m "<목적 한 줄>"   # 5. --no-ff + 목적 명시
 python3 -m unittest discover -s tests         # 6. 병합 결과 다시 확인
 git push                                      # 7. main 업로드
 ```
+
+**병합 커밋 메시지 형식** — 제목은 Git 기본값 `Merge branch '<브랜치>'`를 그대로 두고, **본문 첫 줄에 병합 목적**을 적습니다. 이슈가 있으면 `Refs: #번호`를 붙입니다.
+```text
+Merge branch 'feature/play-quiz'
+
+퀴즈 풀기 기능(랜덤 출제/문제 수 선택/힌트) 병합
+Refs: #3
+```
+(이 저장소의 병합 6개도 이 형식이며, 목적별 요약은 [GIT_EVIDENCE 3장](GIT_EVIDENCE.md#3-브랜치와-병합-기록)에 있습니다. GitHub 이슈는 사용하지 않아 `Refs`는 생략했습니다.)
 
 **금지 사항**
 - `main`에 직접 커밋하지 않습니다 (병합 담당 Lead 제외).
@@ -57,3 +80,18 @@ git push                                      # 7. main 업로드
 
 **충돌·결정**
 - [ ] 다른 브랜치와 규칙이 충돌하면(예: 점수 반올림 방식) 병합 담당이 하나로 결정하고, 테스트와 AGENTS.md를 그 결정에 맞춘다 (실제 사례: `fix/player-qa`의 사사오입 vs `test/quiz-management`의 `round()` → 사사오입으로 통일, 커밋 `f75614e`)
+
+## 4. 병합 충돌 해결 정책
+충돌은 두 종류로 나눠 처리합니다.
+
+**① Git 충돌 (같은 줄을 서로 다르게 고침)**
+1. 병합 담당(Lead)이 `git merge` 중 충돌을 확인하면, 해당 파일의 **담당자(AGENTS.md 2장)의 의도를 우선**합니다. 담당자가 아닌 쪽 변경은 담당자에게 확인받은 뒤 반영합니다.
+2. 양쪽 다 필요한 변경이면 둘 다 살리고, 판단이 어려우면 병합을 취소(`git merge --abort`)하고 브랜치 작성자에게 최신 `main`을 받아 다시 맞춰 달라고 요청합니다.
+3. 해결 후 `python3 scripts/run_checks.py`가 4/4 통과해야 병합 커밋을 만듭니다.
+
+**② 규칙 충돌 (충돌 표시는 없지만 두 브랜치의 동작·기대값이 서로 다름)**
+1. 우선순위: **AGENTS.md 계약 > 사용자에게 보이는 동작의 자연스러움 > 먼저 병합된 쪽**.
+2. 계약을 바꿔야 하면 Lead가 결정하고, 같은 PR/병합 안에서 **AGENTS.md "계약 변경 이력" → 코드 → 테스트 기대값**을 함께 고칩니다.
+3. 실제 사례: `fix/player-qa`(점수 사사오입)와 `test/quiz-management`(`round()` 기대값)가 충돌 표시 없이 병합된 뒤 테스트가 실패 → Lead가 사사오입으로 결정, 테스트(`f75614e`)와 계약 문서를 맞춤.
+
+**공통**: 리뷰어(병합 담당)가 최종 결정권을 갖고, 결정 이유는 병합 커밋 본문이나 계약 변경 이력에 남깁니다.
