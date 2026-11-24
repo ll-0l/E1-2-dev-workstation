@@ -256,6 +256,38 @@ f569289 Docs: README 설계 근거와 영향 범위 보강 (사전평가 반영)
 82cbdfc Docs: 실행 화면 텍스트 로그 추가 (docs/RUN_LOG.md)
 ```
 
+### 4-3. clone 결과를 해시로 검증하기 (2026-11-24)
+clone한 폴더가 원격과 **정말 같은 상태인지**는 최신 커밋 해시를 비교하면 확실히 알 수 있습니다. 아래는 한동안 갱신하지 않은 clone 폴더에서 실제로 실행한 결과입니다. fetch 전에는 `git status`가 차이를 모르다가, fetch 후 13커밋 뒤처진 것이 보이고, pull 후 원격·clone·원래 폴더의 해시가 모두 `b0bc09c`로 같아집니다.
+
+```text
+$ git rev-parse --short HEAD                     # clone 폴더의 현재 커밋
+0ce5801
+
+$ git ls-remote origin main | cut -c1-7          # GitHub(원격) main의 최신 커밋
+b0bc09c
+
+$ git status -sb | head -1                       # fetch 전에는 차이를 모름
+## main...origin/main
+
+$ git fetch -q && git status -sb | head -1        # fetch 후: 원격보다 몇 커밋 뒤인지 표시
+## main...origin/main [behind 13]
+
+$ git pull -q && git rev-parse --short HEAD       # pull 후 clone 폴더의 커밋
+b0bc09c
+
+$ test "$(git rev-parse HEAD)" = "$(git ls-remote origin main | cut -f1)" && echo "일치: clone 폴더 = 원격 main"
+일치: clone 폴더 = 원격 main
+
+$ git -C ../E1-2-dev-workstation rev-parse --short HEAD   # 원래 작업 폴더의 커밋
+b0bc09c
+```
+
+| 확인할 것 | 명령 | 같으면 |
+|---|---|---|
+| 내 폴더의 최신 커밋 | `git rev-parse HEAD` | |
+| 원격의 최신 커밋 (받지 않고 조회만) | `git ls-remote origin main` | 두 해시가 같으면 clone/pull이 최신까지 반영된 것 |
+| 받아 온 원격 정보 기준 차이 | `git fetch && git status -sb` | `[behind N]`이 없으면 최신 |
+
 ## 5. Git 기초 명령어 7종 사용 기록
 
 | 명령어 | 무엇을 하나 | 이 프로젝트에서 사용한 곳 | 증빙 |
