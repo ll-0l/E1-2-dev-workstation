@@ -8,6 +8,7 @@ venv/
 state.json
 state.json.tmp
 state.json.bak
+state.json.before-restore
 quiz_debug.log
 
 # OS / 에디터
