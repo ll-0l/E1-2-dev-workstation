@@ -83,6 +83,8 @@ class QuizSession:
 dict만 다룹니다 (`Quiz`를 import하지 않음). 객체 변환은 `QuizGame` 책임.
 ```python
 DEFAULT_STATE_PATH: Path  # = storage.py가 있는 프로젝트 루트 / "state.json"
+CURRENT_VERSION = 1      # 현재 state.json 형식 버전
+MIGRATIONS: dict[int, Callable[[dict], dict]]  # {이전 버전: 다음 버전으로 변환하는 함수}
 
 class StateStorage:
     def __init__(self, path: str | Path = DEFAULT_STATE_PATH) -> None
@@ -90,6 +92,8 @@ class StateStorage:
         # "loaded"    → 정규화된 state dict
         # "missing"   → 파일 없음, None
         # "corrupted" → JSON 파싱 실패/스키마 불일치, None (손상 파일은 state.json.bak으로 백업)
+        # "unsupported" → version이 CURRENT_VERSION보다 큼(더 새 프로그램이 만든 파일), None
+        #                 손상이 아니므로 백업·덮어쓰기 하지 않음
         # "error"     → 그 밖의 OSError, None
         # 예외를 밖으로 던지지 않음
     def save(self, state: dict) -> bool
@@ -99,6 +103,9 @@ class StateStorage:
 스키마 검증: 최상위 dict, `quizzes`는 list이고 각 항목이 3-2의 Quiz 규칙을 만족해야 함(하나라도 틀리면 corrupted).
 `hint`, `best_score`, `best_record`, `history`가 없으면 기본값(`""`, `None`, `None`, `[]`)으로 채움.
 `best_score`가 있으면 0~100 int(bool 제외)여야 함.
+version 처리: 키가 없으면 1로 간주 → 1 미만이면 corrupted → CURRENT_VERSION보다 크면 unsupported → 작으면 `MIGRATIONS`로 한 단계씩 변환(단계가 없으면 corrupted).
+
+**QuizGame 쪽 처리 (Lead)**: `"unsupported"`, `"error"`이면 `read_only=True`(보호 모드)로 기본 퀴즈를 쓰되 **이후 모든 `save()`를 생략**한다. `history`는 `QuizGame.HISTORY_MAX`(1000)건을 넘으면 오래된 것부터 삭제하며, `best_record`는 따로 유지한다.
 
 ### 3-6. `state.json` 스키마
 ```json
@@ -134,3 +141,5 @@ python3 -m unittest discover -s tests -v
 |---|---|---|
 | `f75614e` | 3-7 점수 반올림: `round()` → **사사오입** `(200c - 100h + t) // (2t)` | `round()`의 짝수 반올림(62.5→62)이 사용자 기대와 달라 Lead가 통일 |
 | `bb10dcb` | 3-1 `read_text` 빈 입력 문구: `⚠️ 내용을 입력하세요.` → **`⚠️ 입력이 비어 있습니다. 내용을 입력하세요.`** (`QuizGame._confirm`도 `⚠️ 잘못된 입력입니다. y 또는 n을 입력하세요.`) | 모든 경고를 "문제 + 조치" 형식으로 통일 (README 4장 "안내 문구 형식") |
+| `5224fb9` | 3-5 `load`에 `"unsupported"` 상태 추가, `CURRENT_VERSION`/`MIGRATIONS` 도입, QuizGame 보호 모드 | 미래 버전 파일을 손상으로 오판해 덮어쓰던 위험 제거, 읽기 오류 시 이후 저장으로 덮어쓰던 위험 제거 |
+| `b27d79a` | `history` 최대 1,000건 롤링 (QuizGame) | 기록이 무한히 쌓여 저장이 느려지는 것 방지 (README 6-7 측정 근거) |
