@@ -1,5 +1,7 @@
 # 🎯 MZ 신조어 퀴즈 게임
 
+[![CI](https://github.com/ll-0l/E1-2-dev-workstation/actions/workflows/ci.yml/badge.svg)](https://github.com/ll-0l/E1-2-dev-workstation/actions/workflows/ci.yml)
+
 터미널에서 즐기는 **2026 MZ·잘파세대 신조어** 4지선다 퀴즈 게임입니다.
 Python 표준 라이브러리만으로 만들었고, 추가한 퀴즈와 점수 기록은 `state.json`에 저장되어 프로그램을 다시 실행해도 그대로 남습니다.
 
@@ -28,7 +30,7 @@ Python 표준 라이브러리만으로 만들었고, 추가한 퀴즈와 점수 
 | 핵심 기능 | 퀴즈 풀기 · 추가 · 목록 · 점수 확인 · 삭제 · 게임 기록 |
 | 데이터 저장 | 프로젝트 루트의 `state.json` (UTF-8) |
 | 구조 | `Quiz` · `QuizSession` · `QuizGame` · `StateStorage` 4개 클래스 + 입력 함수 모듈 `input_utils` |
-| 테스트 | `unittest` 단위 테스트 45개 (5-5 테스트 매핑 참고) |
+| 테스트 | `unittest` 단위 테스트 61개 (5-5 테스트 매핑 참고), GitHub Actions에서 Python 3.10·3.12·3.13 자동 점검 (9-6) |
 
 ## 2. 퀴즈 주제와 선정 이유
 
@@ -51,7 +53,7 @@ Python 표준 라이브러리만으로 만들었고, 추가한 퀴즈와 점수 
 | 난이도 | 별도 등급은 두지 않음. 대신 모든 문제에 힌트를 넣어, 처음 보는 용어도 추론해서 풀 수 있게 함 |
 
 ### 기본 퀴즈 교체 절차
-기본 퀴즈는 `default_quizzes.py`의 `_DEFAULT_QUIZ_DATA` 목록 한 곳에만 있습니다. ① 이 목록의 dict(문제, 선택지 4개, 정답 번호, 힌트)를 고치고 → ② `python3 -m unittest tests.test_quiz`로 형식(4개 선택지, 힌트 포함)을 확인한 뒤 → ③ `state.json`을 지우고 실행하면 새 기본 퀴즈로 시작합니다. `state.json`이 있으면 저장된 퀴즈가 우선하므로, 기존 사용자의 데이터는 교체 후에도 그대로 유지됩니다.
+기본 퀴즈는 `default_quizzes.py`의 `_DEFAULT_QUIZ_DATA` 목록 한 곳에만 있습니다. ① 이 목록의 dict(문제, 선택지 4개, 정답 번호, 힌트)를 고치고 → ② `python3 scripts/validate_quizzes.py`로 형식(5개 이상, 선택지 4개, 정답 1~4, 힌트, 중복 문제·선택지)을 검사하고(오류가 있으면 번호와 이유를 알려 줌) `python3 -m unittest tests.test_quiz`까지 통과시킨 뒤 → ③ `state.json`을 지우고 실행하면 새 기본 퀴즈로 시작합니다. `state.json`이 있으면 저장된 퀴즈가 우선하므로, 기존 사용자의 데이터는 교체 후에도 그대로 유지됩니다.
 
 ## 3. 실행 방법
 
@@ -68,6 +70,12 @@ python3 main.py
 
 # (선택) 단위 테스트 실행
 python3 -m unittest discover -s tests -v
+
+# (선택) 변경 후 전체 점검: 문법 → 테스트 → 퀴즈 검증 → 실제 실행 (CI와 동일)
+python3 scripts/run_checks.py
+
+# (선택) 디버그 로그: 잘못된 입력·불러오기/저장 결과를 quiz_debug.log에 기록 (화면은 그대로)
+QUIZ_DEBUG=1 python3 main.py
 ```
 
 - 처음 실행하면 `state.json`이 없으므로 기본 퀴즈 12개로 시작하고 파일을 자동으로 만듭니다.
@@ -126,7 +134,8 @@ python3 -m unittest discover -s tests -v
 | 플레이 기록 없이 점수·기록 확인 | 📭 아직 퀴즈를 풀지 않았습니다. / 게임 기록이 없습니다. | '퀴즈 풀기'로 첫 기록 생성 | `test_show_history_handles_empty_history` |
 | `state.json` 없음 (첫 실행) | 📂 저장된 데이터가 없어 기본 퀴즈 12개로 시작합니다. | 기본 퀴즈로 시작하고 파일 생성 | `test_missing_state_saves_default_quizzes`, `test_missing_file` |
 | `state.json` 손상 (JSON 문법 오류, 선택지 3개 등) | ⚠️ 데이터 파일이 손상되어 기본 퀴즈로 복구합니다. (원본은 state.json.bak에 백업) | 기본 퀴즈로 복구, 원본은 `.bak`으로 보관 → [6-5](#6-5-손상-파일-백업-정책) | `test_malformed_json_is_backed_up`, `test_invalid_quiz_is_backed_up_as_corrupted`, `test_corrupted_state_resets_runtime_state_and_saves` |
-| `state.json` 읽기 오류 (권한 등) | ⚠️ 데이터 파일을 읽을 수 없어 기본 퀴즈로 시작합니다. | 시작할 때 기존 파일을 덮어쓰지 않음. 파일 권한 확인 후 다시 실행 | `test_read_error_does_not_overwrite_file`, `test_load_os_error` |
+| `state.json` 읽기 오류 (권한 등) | ⚠️ 데이터 파일을 읽을 수 없어 기본 퀴즈로 시작합니다. (기존 파일 보호를 위해 이번 실행 내용은 저장하지 않습니다) | **보호 모드**: 이번 실행 동안 저장을 모두 생략해 원본을 덮어쓰지 않음. 권한(`ls -l state.json`)을 고친 뒤 다시 실행 | `test_read_error_blocks_all_later_saves`, `test_load_os_error` |
+| 더 새로운 버전 프로그램이 만든 `state.json` | ⚠️ 데이터 파일이 더 새로운 버전의 프로그램에서 만들어졌습니다. (…저장하지 않습니다) | 손상으로 보지 않고 백업·덮어쓰기 없이 **보호 모드**. 최신 버전 프로그램으로 실행 | `test_future_version_is_unsupported_and_left_untouched`, `test_unsupported_version_enters_read_only_mode` |
 | `state.json` 쓰기 오류 | ⚠️ 데이터를 파일에 저장하지 못했습니다. + 조치 안내 2줄 (+ 추가·삭제 직후면 "이번 실행 중에만 유지" 1줄) | 기존 파일은 보존됨 → [6-4](#6-4-저장-흐름과-저장-실패-시-복구-절차) | `test_save_serializes_quizzes_and_reports_failure`, `test_save_replace_error_removes_temporary_file`, `test_add_quiz_warns_when_save_fails` |
 
 > 위 상황들의 실제 실행 원문은 [docs/RUN_LOG.md 4장 "예외 흐름 사례"](docs/RUN_LOG.md#4-예외-흐름-사례)에 8가지 사례로 정리했습니다.
@@ -147,6 +156,16 @@ python3 -m unittest discover -s tests -v
 
 입력 오류 문구는 `input_utils.read_int`/`read_text`와 `QuizGame._confirm` 세 곳에서만 만들어, 화면마다 문구가 달라지지 않게 했습니다.
 
+**입력 질문(프롬프트) 형식** — 메뉴와 모든 입력 질문은 `{질문} ({허용 값}): ` 모양으로 끝나, 무엇을 넣어야 하는지 질문 안에서 알 수 있게 했습니다.
+
+| 화면 | 프롬프트 | 허용 값 표시 |
+|---|---|---|
+| 메뉴 | `선택: ` | 메뉴 번호가 바로 위에 나열됨 |
+| 문제 수 | `몇 문제를 풀까요? (1-12): ` | 범위 |
+| 정답 | `정답 입력 (1-4, 힌트: h): ` | 범위 + 특수 키 |
+| 퀴즈 추가 | `정답 번호 (1-4): `, `힌트 (없으면 Enter): ` | 범위 / 생략 가능 여부 |
+| 삭제 | `삭제할 퀴즈 번호 (1-13, 취소: 0): `, `이 퀴즈를 삭제할까요? (y/n): ` | 범위 + 취소 키 / 선택지 |
+
 ## 5. 파일 구조와 설계
 
 ### 5-1. 파일 구조
@@ -159,9 +178,13 @@ E1-2-dev-workstation/
 ├── quiz_game.py         # QuizGame: 메뉴 흐름, 퀴즈 관리, 점수 기록, 저장 시점
 ├── storage.py           # StateStorage: state.json 읽기/쓰기, 손상 감지와 백업
 ├── input_utils.py       # 공통 입력 검증 함수 (공백 제거, 숫자/범위/빈 입력 처리)
-├── tests/               # unittest 단위 테스트 (45개, 5-5 참고)
+├── tests/               # unittest 단위 테스트 (61개, 5-5 참고)
 ├── scripts/
+│   ├── run_checks.py         # 변경 후 자동 점검: 문법 → 테스트 → 퀴즈 검증 → 실행 (CI와 동일)
+│   ├── validate_quizzes.py   # 기본 퀴즈/state.json 퀴즈 형식 검증 (2장)
+│   ├── restore_backup.py     # state.json.bak 검사·복원 (6-5)
 │   └── benchmark_storage.py  # 기록 수별 state.json 크기/저장 시간 측정 (6-7)
+├── .github/workflows/ci.yml  # GitHub Actions: Python 3.10/3.12/3.13에서 run_checks.py 실행
 ├── docs/
 │   ├── screenshots/     # 실행 화면 · 개발 환경 · git log 스크린샷
 │   ├── RUN_LOG.md       # 실행 화면 텍스트 로그
@@ -194,6 +217,33 @@ E1-2-dev-workstation/
 
 예를 들어 퀴즈 한 판이 끝나면 `QuizSession.play()`는 점수가 담긴 dict를 **돌려주기만** 하고, 그 점수를 최고 점수와 비교해 기록에 넣는 일(`_record_result`)과 저장(`save`)은 `QuizGame`이 합니다.
 
+**클래스 관계도** (화살표 = "사용한다")
+```
+                         main.py
+                            │ QuizGame().run()
+                            ▼
+  ┌───────────────────── QuizGame ─────────────────────┐
+  │ quizzes: list[Quiz]   best_score   history   read_only │
+  └──┬─────────────┬───────────────┬───────────────┬──┘
+     │ 보관·생성    │ 한 판 진행      │ 메뉴·추가 입력   │ 읽기/쓰기 (dict만)
+     ▼             ▼               ▼               ▼
+   Quiz ◀─출제── QuizSession ───▶ input_utils     StateStorage ──▶ state.json
+  (문제 1개)     (채점, 결과 dict)  (정답 입력 검증)  (검증·백업·버전 변환)
+```
+처음 읽을 때는 `main.py` → `QuizGame.run()` → 메뉴 메서드 순서로 따라가면 전체 흐름이 보입니다.
+
+**오류 전파 정책 — 어떤 문제를 어디서 처리하나**
+
+| 문제 | 처음 발생하는 곳 | 처리하는 곳 | 처리 방식 |
+|---|---|---|---|
+| 잘못된 입력 (빈 값, 문자, 범위 밖) | `input()` | `input_utils` | 그 자리에서 안내 후 재입력. 위로 올리지 않음 |
+| Ctrl+C / EOF | `input()` | **`QuizGame.run`만** | `input_utils`·`QuizSession`은 잡지 않고 그대로 전달 → `run`이 저장 후 종료 |
+| 잘못된 퀴즈 값 (선택지 3개 등) | `Quiz.__init__` | 호출한 쪽 | `ValueError` 발생 → `QuizGame._apply_state`는 손상으로 처리 |
+| 파일 없음·손상·권한·미래 버전 | `StateStorage` | `StateStorage` → `QuizGame.load` | 예외를 밖으로 던지지 않고 상태값으로 변환 → `QuizGame`이 안내·복구·보호 모드 결정 |
+| 저장 실패 | `StateStorage.save` | `QuizGame.save` | `False`를 받아 안내 문구 출력, 게임은 계속 |
+
+원칙: **사용자에게 말하는 일은 `QuizGame`과 `input_utils`만**, **종료 결정은 `QuizGame.run`만** 합니다.
+
 ### 5-3. 클래스를 사용한 이유 (함수만 쓸 때와 비교)
 - **데이터와 동작을 한곳에 묶습니다.** 퀴즈를 dict로만 다루면 `quiz["answer"]` 같은 키 접근과 정답 확인 함수가 여러 파일에 흩어집니다. `Quiz` 클래스는 문제·선택지·정답(속성)과 출력·정답 확인(메서드)을 함께 가지고 있어, 퀴즈 관련 코드를 `quiz.py` 한 곳에서 찾을 수 있습니다.
 - **잘못된 데이터가 생기지 않게 막습니다.** `Quiz.__init__`이 생성 시점에 "선택지 4개, 정답 1~4"를 검사합니다. 그래서 프로그램 어디서든 `Quiz` 객체라면 형식이 올바르다고 믿고 쓸 수 있습니다.
@@ -222,18 +272,29 @@ ValueError: 선택지는 정확히 4개여야 합니다.
 - **`StateStorage`는 화면에 아무것도 출력하지 않습니다.** 결과를 `"loaded"`/`"missing"`/`"corrupted"`/`"error"` 같은 상태값으로만 돌려주고, 사용자에게 어떤 메시지를 보여줄지는 `QuizGame.load`가 정합니다. 그래서 안내 문구를 바꿔도 저장 코드는 그대로입니다.
 - **따로 테스트할 수 있습니다.** 입력 함수는 `input()`을 가짜로 바꿔(mock) 테스트하고, 저장소는 임시 폴더의 파일로 테스트합니다. 서로 의존하지 않아서 실패 원인을 바로 찾을 수 있습니다. 어떤 테스트가 어떤 책임을 검증하는지는 아래 5-5에 있습니다.
 
+**경계 상황에서 두 쪽이 어떻게 맞물리나**
+
+| 상황 | 입력 쪽 | 저장 쪽 | 결과 |
+|---|---|---|---|
+| 퀴즈 추가 중 정답 번호를 계속 틀리게 입력 | `read_int`가 올바른 값이 올 때까지 재입력 | 아직 호출되지 않음 | 검증을 통과한 값만 `Quiz`가 되어 저장됨 |
+| 퀴즈 추가 중 문제만 쓰고 Ctrl+C | 입력 중단 신호를 그대로 전달 | `run`이 **추가 전 상태**를 저장 | 반쯤 입력한 퀴즈는 남지 않음 |
+| 퀴즈 추가는 성공했는데 저장 실패 | 정상 | `save()`가 `False` | 목록에는 보이지만 "이번 실행 중에만 유지" 안내 |
+| 보호 모드에서 퀴즈 추가 | 정상 | 저장 생략 | 위와 같은 안내, 원본 파일 그대로 |
+
 ### 5-5. 테스트 매핑 (책임 ↔ 테스트)
-`python3 -m unittest discover -s tests -v`로 45개를 실행합니다. 실제 `state.json`은 건드리지 않고 모두 임시 폴더를 씁니다.
+`python3 -m unittest discover -s tests -v`로 61개를 실행합니다. 실제 `state.json`은 건드리지 않고 모두 임시 폴더를 씁니다.
 
 | 테스트 파일 | 검증하는 책임 | 개수 | 대표 테스트 |
 |---|---|---:|---|
-| `test_input_utils.py` | **입력 검증**: 공백 제거, 빈 입력·문자·범위 밖 재입력, 허용 키워드(`h`), EOF 전파 | 5 | `test_read_int_retries_and_accepts_keyword_case_insensitively` |
+| `test_input_utils.py` | **입력 검증**: 공백 제거, 빈 입력·문자·범위 밖 재입력, 허용 키워드(`h`), EOF 전파, 디버그 로그 기록 | 6 | `test_read_int_retries_and_accepts_keyword_case_insensitively` |
 | `test_quiz_game_run.py` | **메뉴 입력과 종료**: 메뉴 오입력 재요청, Ctrl+C/EOF 저장 후 종료, 저장 실패 안내, 재시작 후 유지 | 5 | `test_keyboard_interrupt_saves_and_exits_without_traceback` |
 | `test_quiz.py` | **Quiz 규칙**: 생성 검증, 정답 판정, dict 변환, 기본 퀴즈 형식 | 5 | `test_validation_rejects_invalid_values` |
 | `test_quiz_session.py` | **채점**: 점수 공식·사사오입, 문항 수 검증, 셔플 재현성, 힌트 1회 차감 | 5 | `test_score_rounds_half_up_at_half_point_boundaries` |
-| `test_quiz_game_management.py` | **퀴즈 관리·기록**: 삭제 취소/확인/저장, 기록 최신순·평균·최고 표시, 최고 점수 갱신 조건 | 7 | `test_record_result_updates_only_for_strictly_higher_score` |
-| `test_storage.py` | **데이터 입출력**: 파일 없음, 손상 JSON·스키마 오류 백업, 백업 보존 정책, 수동 복구, UTF-8 왕복, 원자적 저장 실패 처리 | 12 | `test_backup_keeps_only_latest_corrupted_file` |
-| `test_quiz_game_storage.py` | **저장 연동**: load 상태별 처리(loaded/missing/corrupted/error), 저장 실패 안내 | 6 | `test_read_error_does_not_overwrite_file` |
+| `test_quiz_game_management.py` | **퀴즈 관리·기록**: 삭제 취소/확인/저장, 기록 최신순·평균·최고 표시, 최고 점수 갱신 조건, 기록 1,000건 롤링 | 8 | `test_record_result_updates_only_for_strictly_higher_score` |
+| `test_storage.py` | **데이터 입출력**: 파일 없음, 손상 JSON·스키마 오류 백업, 백업 보존 정책, 수동 복구, UTF-8 왕복, 원자적 저장 실패, **버전 마이그레이션·미래 버전 보호·강제 종료 후 남은 임시 파일** | 17 | `test_migration_upgrades_old_version_step_by_step` |
+| `test_quiz_game_storage.py` | **저장 연동**: load 상태별 처리(loaded/missing/corrupted/error/unsupported), 보호 모드, 저장 실패 안내 | 8 | `test_read_error_blocks_all_later_saves` |
+| `test_validate_quizzes.py` | **퀴즈 검증 도구**: 기본 퀴즈 통과, 중복·힌트 누락·같은 선택지·형식 오류 검출, 개수 부족, 정답 쏠림 경고 | 4 | `test_detects_each_kind_of_error` |
+| `test_restore_backup.py` | **백업 복원 도구**: 백업 없음, 손상된 백업 복원 거부, 정상 백업 복원과 이전 파일 보관 | 3 | `test_valid_backup_is_restored_and_current_file_kept` |
 
 ## 6. 데이터 파일 설명 (`state.json`)
 
@@ -258,7 +319,10 @@ ValueError: 선택지는 정확히 4개여야 합니다.
 | 한 판 종료(점수·기록 갱신) | | ✅ | `play_quiz` → `save` |
 | 메뉴 7 종료 | | ✅ | `quit` → `save` |
 | Ctrl+C / EOF 종료 | | ✅ | `run`의 `except` → `save` |
+| 보호 모드(읽기 오류·미래 버전 파일) | | ❌ 모든 저장 생략 | `save`의 `read_only` 검사 |
 | 목록·점수·기록 보기 | | (변경 없음 → 쓰지 않음) | |
+
+> **동시 실행 안전성 요약**: 파일 잠금은 구현하지 않았습니다. **한 폴더에서는 게임을 하나만 실행**하는 것이 권장 설정이며, 이유와 대처법은 [6-8 운영 지침](#6-8-운영-지침-동시-실행과-데이터-관리)에 있습니다.
 
 ### 6-2. 스키마와 필드 설계 의도
 ```json
@@ -310,7 +374,8 @@ StateStorage.load()
  ├─ "loaded"    → Quiz 객체로 변환해 상태 복원 → "📂 저장된 데이터를 불러왔습니다 (퀴즈 N개, 최고점수 X점)"
  ├─ "missing"   → 기본 퀴즈 12개로 시작 → 즉시 저장해 state.json 생성
  ├─ "corrupted" → 손상본을 state.json.bak으로 복사 → 기본 퀴즈로 초기화 → 즉시 저장
- └─ "error"     → 기본 퀴즈로 시작하되, 시작 시점에는 저장하지 않음 (읽지 못한 파일을 덮어쓰지 않기 위해)
+ ├─ "unsupported" → (더 새 버전 파일) 기본 퀴즈로 시작, 보호 모드 → 이번 실행 동안 저장 안 함, 원본 그대로
+ └─ "error"     → (권한 등 읽기 실패) 기본 퀴즈로 시작, 보호 모드 → 이번 실행 동안 저장 안 함
 ```
 `StateStorage.load`는 어떤 경우에도 예외를 밖으로 던지지 않고 상태값만 돌려주므로, 파일 문제로 프로그램이 멈추지 않습니다.
 
@@ -327,16 +392,33 @@ StateStorage.load()
    ```
 5. **사용자 복구 절차**: 프로그램을 종료하고 → 폴더 권한(`ls -l`)과 디스크 공간을 확인한 뒤 → 다시 실행하면 마지막으로 저장된 상태부터 이어집니다. 종료 중(Ctrl+C) 저장에 실패해도 같은 안내가 나옵니다. 실제 실행 원문: [RUN_LOG 4-8](docs/RUN_LOG.md#4-8-저장-불가-상태에서-퀴즈-추가--ctrlc)
 
+**저장 실패 시 바로 할 일 (체크리스트)**
+- [ ] 게임을 7번으로 종료한다 (안내가 나와도 기존 `state.json`은 안전함)
+- [ ] 아래 표에서 원인을 확인하고 조치한다
+- [ ] `python3 main.py`로 다시 실행해 "📂 저장된 데이터를 불러왔습니다"가 나오는지 확인한다
+- [ ] 원인을 모르겠으면 `QUIZ_DEBUG=1 python3 main.py`로 실행 후 `quiz_debug.log`의 "저장 실패" 줄을 확인한다
+
+| 상황 예시 | 확인 명령 | 즉시 조치 |
+|---|---|---|
+| 폴더에 쓰기 권한이 없음 (다른 계정으로 만든 폴더, 읽기 전용 폴더) | `ls -ld .` | `chmod u+w .` 또는 쓰기 가능한 폴더로 프로젝트를 옮겨 실행 |
+| `state.json` 자체가 읽기 전용 | `ls -l state.json` | `chmod u+w state.json` |
+| 디스크 공간 부족 | `df -h .` | 불필요한 파일 정리 후 재실행 |
+| USB·네트워크 드라이브가 분리됨 | `ls` 결과가 비거나 오류 | 드라이브 재연결 후 재실행 |
+
+**저장 도중 강제 종료되면?** 저장은 `state.json.tmp`에 먼저 쓰고 마지막에 한 번에 바꿔치기하므로, 도중에 꺼져도 `state.json`은 이전 상태 그대로입니다. 반쯤 쓴 `state.json.tmp`가 남을 수 있지만 프로그램은 이 파일을 읽지 않고, 다음 저장 때 덮어쓴 뒤 정리합니다 (`test_leftover_temp_file_from_crash_is_ignored_then_replaced`로 검증).
+
 ### 6-5. 손상 파일 백업 정책
 - 손상을 감지하면 원본을 **`state.json.bak` 1개**로 복사한 뒤 기본 데이터로 복구합니다(`StateStorage._backup_corrupted_file`).
 - **가장 최근 손상본 1개만 보관합니다.** 다시 손상이 감지되면 `.bak`을 새 손상본으로 덮어씁니다. 이전 백업을 남기려면 직접 다른 이름(예: `state.json.bak.1`)으로 복사해 두세요.
 - 백업 파일도 실행 데이터라 `.gitignore`로 Git에서 제외합니다.
 - **수동 복구 방법**: `state.json.bak`을 열어 잘못된 부분(예: 선택지 개수)을 고친 뒤 `state.json`으로 이름을 바꾸고 다시 실행합니다.
+- **복원 도우미 스크립트**: `python3 scripts/restore_backup.py`가 `.bak`을 **검사**해 지금 불러올 수 있는지, 아니면 몇 번째 줄이 틀렸는지 알려 줍니다. 정상이면 `--restore`를 붙여 실행하면 현재 파일을 `state.json.before-restore`로 보관한 뒤 `.bak`으로 되돌립니다. 손상된 `.bak`은 복원하지 않습니다. (실행 원문: [RUN_LOG 4-10](docs/RUN_LOG.md#4-10-백업-검사복원-스크립트))
 - **보관 수를 늘리고 싶다면**: `_backup_corrupted_file`에서 백업 이름에 시각을 붙이고(`state.json.20261124-190000.bak`), 같은 패턴 파일이 N개를 넘으면 오래된 것부터 지우도록 바꾸면 됩니다. 손상은 드물고 백업은 사람이 직접 확인해 고치는 용도라, 현재는 단순한 1개 보관을 택했습니다.
 
 **복구 테스트 절차**
 | 방법 | 절차 | 기대 결과 |
 |---|---|---|
+| 자동 (스크립트) | `python3 -m unittest tests.test_restore_backup` | 손상된 백업 복원 거부, 정상 백업 복원 + 이전 파일 보관 테스트 통과 |
 | 자동 | `python3 -m unittest tests.test_storage` | `test_backup_keeps_only_latest_corrupted_file`(두 번 손상 → `.bak` 1개, 최신 내용), `test_manual_recovery_from_backup`(`.bak` 수정 → 되돌리면 `loaded`) 통과 |
 | 수동 ① 손상 | `echo '{broken' > state.json` → `python3 main.py` | "⚠️ 데이터 파일이 손상되어 기본 퀴즈로 복구합니다" 출력, `state.json.bak` 내용이 `{broken` |
 | 수동 ② 재손상 | 다시 `echo '{again' > state.json` → 실행 | `ls state.json*`에 `.bak`이 1개뿐이고 내용이 `{again` |
@@ -382,7 +464,8 @@ StateStorage.load()
 
 - 크기와 시간이 **기록 수에 거의 정비례**합니다(1건 ≈ 160바이트, 저장 ≈ 0.01ms/건).
 - 한 판을 끝낼 때마다 저장하므로, 저장 시간이 사람이 느끼는 지연(약 0.1초)에 닿는 **기록 1만 건 무렵**이 대안을 검토할 시점입니다. 하루 10판씩이면 약 3년 분량이라 개인용으로는 현재 방식으로 충분합니다.
-- 그 이상이 예상되면 ① `history` 상한(예: 최근 1,000건만 보관), ② 기록만 JSON Lines로 분리(추가만 하므로 저장 시간 일정), ③ SQLite 전환 순으로 적용합니다.
+- **기본 대비책으로 `history` 상한을 구현했습니다**: 기록은 최근 **1,000건**(`QuizGame.HISTORY_MAX`)까지만 보관하고, 넘으면 오래된 것부터 지웁니다(롤링). 측정표 기준 1,000건 ≈ 162KB·저장 약 11ms라 판이 쌓여도 저장 지연이 커지지 않습니다. 최고 기록(`best_record`)은 따로 저장되어 오래된 기록이 지워져도 남습니다.
+- 모든 기록을 영구 보관해야 하는 요구가 생기면 ② 기록만 JSON Lines로 분리(추가만 하므로 저장 시간 일정), ③ SQLite 전환 순으로 적용합니다.
 
 현재 규모(퀴즈 수십 개, 개인 플레이 기록)에서는 JSON의 단순함이 더 큰 장점이라고 판단했습니다. 데이터가 커지면 `StateStorage`만 SQLite 버전으로 바꾸면 됩니다(5-4, 8장 참고).
 
@@ -394,25 +477,39 @@ JSON 파일에는 잠금 기능이 없어서, **같은 폴더에서 프로그램
 - **덮어쓰기가 의심되면** 프로그램을 모두 종료하고 백업본을 `state.json`으로 되돌린 뒤 하나만 다시 실행합니다.
 - 코드로 막아야 할 만큼 사용 규모가 커지면, 시작할 때 잠금 파일(`state.json.lock`)을 만들고 이미 있으면 실행을 거부하는 방식이나 SQLite 트랜잭션을 적용합니다.
 
-### 6-9. 스키마 버전 업 (마이그레이션) 예시
-`version` 필드는 구조가 바뀔 때를 대비한 것입니다. 현재 코드는 `version`이 1이 아니면 손상으로 판단합니다. 예를 들어 퀴즈에 `category` 필드를 추가해 **버전 2**로 올린다면 흐름은 다음과 같습니다.
+**JSON 파일 백업·동기화 권장 절차**
+1. **백업**: 게임을 종료한 상태에서 `cp state.json backups/state-$(date +%Y%m%d).json`처럼 날짜를 붙여 복사합니다. 실행 중 복사는 피합니다(저장 직전 상태일 수 있음).
+2. **다른 컴퓨터와 동기화**: Git으로 올리지 않습니다(개인 기록이고 `.gitignore` 대상). 클라우드 폴더·USB로 복사하되, **양쪽에서 동시에 플레이하지 않고** "마지막으로 플레이한 쪽 → 다른 쪽" 한 방향으로만 복사합니다. 복사 전 받는 쪽 파일도 백업합니다.
+3. **복사 후 확인**: `python3 scripts/validate_quizzes.py state.json`으로 퀴즈 형식을 검사하거나, 실행해서 "📂 저장된 데이터를 불러왔습니다"가 나오는지 확인합니다.
+4. **보안**: JSON은 코드가 실행되지 않는 순수 텍스트라 pickle과 달리 파일을 여는 것만으로 위험하지는 않습니다. 대신 누구나 읽을 수 있으므로 개인정보를 퀴즈·힌트에 넣지 않고, 공유 컴퓨터에서는 `chmod 600 state.json`으로 본인만 읽게 합니다. 받은 파일은 프로그램이 형식을 검증한 뒤에만 사용합니다(손상 시 백업 후 복구).
+
+### 6-9. 스키마 버전 업 (마이그레이션)
+`version` 필드와 **변환 구조가 이미 구현**되어 있습니다(`storage.py`의 `CURRENT_VERSION`, `MIGRATIONS`). 현재 버전은 1이고, 파일을 읽을 때 버전을 보고 이렇게 처리합니다.
 
 ```
-StateStorage.load()
- └─ JSON 읽기
-     ├─ version == 2 → 그대로 검증
-     ├─ version == 1 → migrate_v1_to_v2(): 각 퀴즈에 "category": "기타" 추가, version = 2
-     │                 → 검증 → 다음 save() 때 v2 형식으로 저장됨
-     └─ version > 2 (더 새 프로그램이 만든 파일) → "error"로 처리해 덮어쓰지 않음
+StateStorage.load() → StateStorage._migrate()
+ ├─ version 키 없음        → 1로 간주 (초기 파일 호환)
+ ├─ version < 1           → "corrupted" (백업 후 복구)
+ ├─ version > CURRENT     → "unsupported" (더 새 프로그램이 만든 파일 → 백업·덮어쓰기 없이 보호 모드)
+ └─ version < CURRENT     → MIGRATIONS[version]으로 한 단계씩 변환 → 검증 → 다음 save() 때 새 형식으로 저장
+                            (중간 변환 함수가 없으면 "corrupted")
 ```
+예를 들어 퀴즈에 `category` 필드를 추가해 **버전 2**로 올린다면, 변환 함수를 만들어 등록하고 `CURRENT_VERSION`만 올리면 됩니다.
 ```python
+# storage.py
+CURRENT_VERSION = 2
+
 def migrate_v1_to_v2(state: dict) -> dict:
     for quiz in state["quizzes"]:
         quiz.setdefault("category", "기타")
     state["version"] = 2
     return state
+
+MIGRATIONS = {1: migrate_v1_to_v2}
 ```
-함께 바꿀 곳: `Quiz.__init__`/`to_dict`/`from_dict`(category 속성), `StateStorage._normalize_quiz`(category 검증), `QuizGame.add_quiz`(입력 추가), `QuizGame.to_state`의 `"version": 2`, 테스트에 "v1 파일을 읽으면 v2로 변환" 케이스 추가.
+함께 바꿀 곳: `Quiz.__init__`/`to_dict`/`from_dict`(category 속성), `StateStorage._normalize_quiz`(category 검증), `QuizGame.add_quiz`(입력 추가). `QuizGame.to_state`는 `CURRENT_VERSION`을 쓰므로 수정 불필요.
+
+**자동 테스트**(`tests/test_storage.py`): `test_migration_upgrades_old_version_step_by_step`(가짜 v2 환경에서 v1 파일이 변환되는지), `test_missing_migration_step_is_corrupted`(변환 단계 누락), `test_future_version_is_unsupported_and_left_untouched`(미래 버전 파일이 그대로 남는지), `test_version_below_one_is_corrupted`. 실제 실행 원문은 [RUN_LOG 4-9](docs/RUN_LOG.md#4-9-더-새로운-버전의-데이터-파일)에 있습니다.
 
 ## 7. 실행 화면
 
@@ -468,13 +565,14 @@ def migrate_v1_to_v2(state: dict) -> dict:
 | 메뉴 구조 개편 (하위 메뉴 등) | `quiz_game.py`의 `menu_items`·`run` | 메뉴 번호 변경으로 사용자 혼란, 종료/중단 처리 누락 | `run`의 `except` 구조 유지, `tests/test_quiz_game_run.py` 확장 |
 | 다중 사용자 지원 | `storage.py`(사용자별 파일/테이블), `quiz_game.py`(사용자 선택) | 서로의 기록 덮어쓰기 | 사용자별 파일 분리 또는 DB, 동시 실행 잠금 (6-8) |
 
-**대형 변경 공통 체크리스트**
-- [ ] 변경 전 `python3 -m unittest discover -s tests`가 모두 통과하는지 확인 (기준선)
+**대형 변경 공통 체크리스트** — 자동으로 확인할 수 있는 항목은 `scripts/run_checks.py`(로컬)와 GitHub Actions CI(push마다)가 같은 점검을 수행합니다.
+- [ ] 변경 전 `python3 scripts/run_checks.py`가 4/4 통과하는지 확인 (기준선: 문법·테스트·퀴즈 검증·실행)
 - [ ] `feature/<이름>` 브랜치에서 작업 (`main`은 항상 실행 가능 상태 유지)
 - [ ] AGENTS.md의 인터페이스 계약(`load`/`save` 반환 형태 등)을 바꾸는지 먼저 판단하고, 바꾼다면 문서부터 수정
 - [ ] 기존 `state.json`을 가진 사용자가 업그레이드 후에도 데이터를 잃지 않는지 확인 (구버전 파일로 실행해 보기)
 - [ ] **테스트 업데이트**: 바뀐 동작의 기대값 수정 + 새 경로(변환·오류) 테스트 추가 → 전체 통과
-- [ ] `python3 main.py`로 메뉴 1~7, Ctrl+C 종료를 직접 확인
+- [ ] `python3 scripts/run_checks.py` 재실행 → 4/4 통과, `python3 main.py`로 메뉴 1~7과 Ctrl+C 종료를 직접 확인
+- [ ] push 후 GitHub Actions(CI)가 Python 3.10·3.12·3.13에서 모두 통과하는지 확인 (`gh run list` 또는 README 상단 배지)
 - [ ] README(4·6·8장)와 RUN_LOG 갱신 → `--no-ff`로 `main` 병합
 
 ## 9. 개발 과정 (Git)
@@ -483,6 +581,19 @@ def migrate_v1_to_v2(state: dict) -> dict:
 
 ### 9-1. 원격 저장소와 커밋
 - 원격 저장소: `origin  https://github.com/ll-0l/E1-2-dev-workstation.git` (Public)
+- **주요 커밋 해시** — 원격에 접속할 수 없을 때도 clone한 사본이나 제출물에서 `git show <해시>`로 같은 커밋인지 대조할 수 있습니다.
+
+  | 해시 | 의미 |
+  |---|---|
+  | `f7be1ec` | 최초 커밋 (`git init` 후 첫 commit) |
+  | `808c6d1` | 첫 브랜치 병합 (`feature/quiz-model`) |
+  | `d687507` | 퀴즈 풀기 브랜치 병합 (`feature/play-quiz`) |
+  | `c5a0234` | state.json 저장 기능 병합 (`feature/storage`) |
+  | `e0c3f89` | clone한 폴더에서 만든 커밋 (clone/pull 1차 실습) |
+  | `c1b3d90` | clone/pull 2차 실습 커밋 |
+  | `5224fb9` | 스키마 마이그레이션·보호 모드 추가 |
+
+  확인 예: `git cat-file -t d687507` → `commit`이 나오면 그 커밋이 내 사본에 있는 것입니다. 원격 최신 커밋은 `git ls-remote origin main`으로 해시만 받아 비교할 수 있습니다.
 - 의미 있는 커밋(병합 커밋 제외) **30개 이상**. 확인 명령: `git log --no-merges --oneline | wc -l`
 - Git 기초 명령어 7종 사용: `init`(저장소 생성) · `add`/`commit`(기능 단위 커밋) · `push`(GitHub 업로드) · `checkout -b`(브랜치 생성) · `clone`(별도 폴더 복제) · `pull`(변경 받아오기)
 
@@ -520,3 +631,8 @@ def migrate_v1_to_v2(state: dict) -> dict:
 
 ### 9-5. 협업 방식
 AI 코딩 에이전트 3개(Claude Code 2개, Codex 1개)가 담당 파일을 나눠 각자 clone한 폴더에서 브랜치로 작업했고, Lead가 검토 후 `main`에 병합했습니다. 역할과 인터페이스 약속은 [AGENTS.md](AGENTS.md)에 있습니다.
+
+### 9-6. 자동 점검 (CI)
+`.github/workflows/ci.yml`이 `main`에 push하거나 Pull Request를 만들 때마다 GitHub Actions에서 **Python 3.10(과제 최소 버전)·3.12·3.13** 세 환경으로 `scripts/run_checks.py`를 실행합니다.
+- 점검 내용: 문법 검사 → 단위 테스트 61개 → 기본 퀴즈 검증 → 실제 `main.py` 실행(잘못된 입력 → 목록 → 종료, `state.json` 생성 확인)
+- 결과는 README 맨 위 배지와 GitHub의 Actions 탭에서 볼 수 있습니다. 로컬에서는 같은 명령 `python3 scripts/run_checks.py`로 확인합니다.
