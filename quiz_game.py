@@ -108,7 +108,7 @@ class QuizGame:
     def list_quizzes(self) -> bool:
         """등록된 퀴즈 문제를 번호와 함께 출력한다. 퀴즈가 없으면 False."""
         if not self.quizzes:
-            print("📭 등록된 퀴즈가 없습니다.\n")
+            print("📭 등록된 퀴즈가 없습니다. '퀴즈 추가'에서 먼저 퀴즈를 등록하세요.\n")
             return False
 
         print(f"📋 등록된 퀴즈 목록 (총 {len(self.quizzes)}개)\n")
