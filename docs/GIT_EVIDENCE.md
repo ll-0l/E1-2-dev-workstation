@@ -42,7 +42,7 @@ origin	https://github.com/ll-0l/E1-2-dev-workstation.git (push)
 
 ## 2. 커밋 수와 전체 이력
 
-> 아래 출력은 최초 작성 시점(`c1b3d90`) 기준입니다. 재평가 보완 작업 후 이 문서를 갱신한 커밋까지 포함하면 의미 있는 커밋은 **48개**입니다. 최신 값은 `git log --no-merges --oneline | wc -l`로 확인합니다.
+> 아래 출력은 최초 작성 시점(`c1b3d90`) 기준입니다. 이 문장을 마지막으로 고친 커밋(2026-11-24, Codex 검토 반영)까지 포함하면 의미 있는 커밋은 **53개**이며, 이후 커밋이 더해지면 늘어납니다. 언제든 `git log --no-merges --oneline | wc -l`로 최신 값을 확인할 수 있습니다.
 
 ```text
 $ git log --no-merges --oneline | wc -l   # 의미 있는 커밋 수 (병합 커밋 제외)
