@@ -31,6 +31,17 @@ class InputUtilsTest(unittest.TestCase):
         with self.assertRaises(EOFError):
             input_utils.read_line("입력: ")
 
+    @patch("builtins.print")
+    @patch("builtins.input", side_effect=["", "abc", "9", "2"])
+    def test_invalid_inputs_are_logged_for_debugging(self, _mock_input, _mock_print) -> None:
+        with self.assertLogs("quiz.input", level="DEBUG") as logs:
+            self.assertEqual(2, input_utils.read_int("선택: ", 1, 4))
+
+        self.assertEqual(3, len(logs.records))
+        self.assertIn("빈 입력", logs.output[0])
+        self.assertIn("숫자 변환 실패", logs.output[1])
+        self.assertIn("범위 밖 숫자", logs.output[2])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,7 +2,12 @@
 
 모든 사용자 입력은 이 모듈을 거친다.
 KeyboardInterrupt / EOFError 는 여기서 잡지 않고 호출자(QuizGame.run)로 전파한다.
+잘못된 입력은 logger("quiz.input")에 DEBUG로 기록한다 (QUIZ_DEBUG=1일 때만 파일로 저장됨, main.py 참고).
 """
+
+import logging
+
+logger = logging.getLogger("quiz.input")
 
 
 def read_line(prompt: str) -> str:
@@ -16,6 +21,7 @@ def read_text(prompt: str) -> str:
         text = read_line(prompt)
         if text:
             return text
+        logger.debug("빈 입력 | prompt=%r", prompt)
         print("⚠️ 입력이 비어 있습니다. 내용을 입력하세요.")
 
 
@@ -37,6 +43,7 @@ def read_int(
         raw = read_line(prompt)
 
         if not raw:
+            logger.debug("빈 입력 | prompt=%r", prompt)
             print(f"⚠️ 입력이 비어 있습니다. {min_value}-{max_value} 사이의 숫자를 입력하세요.")
             continue
 
@@ -46,10 +53,12 @@ def read_int(
         try:
             number = int(raw)
         except ValueError:
+            logger.debug("숫자 변환 실패 | prompt=%r | 입력=%r", prompt, raw)
             print(range_message)
             continue
 
         if not min_value <= number <= max_value:
+            logger.debug("범위 밖 숫자 | prompt=%r | 입력=%d | 허용=%d-%d", prompt, number, min_value, max_value)
             print(range_message)
             continue
 

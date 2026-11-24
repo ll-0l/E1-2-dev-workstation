@@ -1,10 +1,16 @@
 """게임 전체를 관리하는 QuizGame 클래스."""
 
+import logging
+
 from default_quizzes import get_default_quizzes
 from input_utils import read_int, read_line, read_text
 from quiz import CHOICE_COUNT, Quiz
 from quiz_session import QuizSession
 from storage import CURRENT_VERSION, StateStorage
+
+logger = logging.getLogger("quiz.game")
+# 로그 설정(main.py의 QUIZ_DEBUG)이 없으면 아무것도 출력하지 않는다 (경고가 화면에 섞이지 않도록)
+logging.getLogger("quiz").addHandler(logging.NullHandler())
 
 LINE = "=" * 40
 THIN_LINE = "-" * 40
@@ -235,6 +241,7 @@ class QuizGame:
     def load(self) -> None:
         """state.json을 읽어 게임 상태를 복원한다. 실패하면 기본 퀴즈로 시작한다."""
         state, status = self.storage.load()
+        logger.debug("state.json 불러오기 결과: %s", status)
 
         if status == "loaded" and state is not None:
             try:
@@ -267,10 +274,13 @@ class QuizGame:
     def save(self) -> bool:
         """현재 상태를 state.json에 저장한다. 실패하면 안내 후 False."""
         if self.read_only:
+            logger.debug("보호 모드라 저장 생략")
             print("⚠️ 보호 모드라 파일에 저장하지 않았습니다. 파일 문제를 해결한 뒤 다시 실행하세요.")
             return False
         if self.storage.save(self.to_state()):
+            logger.debug("저장 성공 (퀴즈 %d개, 기록 %d건)", len(self.quizzes), len(self.history))
             return True
+        logger.warning("저장 실패: %s", self.storage.path if hasattr(self.storage, "path") else "?")
         print(
             "⚠️ 데이터를 파일에 저장하지 못했습니다.\n"
             "   → state.json이 있는 폴더의 쓰기 권한과 디스크 여유 공간을 확인한 뒤 다시 실행해 주세요.\n"

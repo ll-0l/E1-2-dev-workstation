@@ -8,6 +8,7 @@ venv/
 state.json
 state.json.tmp
 state.json.bak
+quiz_debug.log
 
 # OS / 에디터
 .DS_Store
