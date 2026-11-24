@@ -252,7 +252,11 @@ class QuizGame:
         """현재 상태를 state.json에 저장한다. 실패하면 안내 후 False."""
         if self.storage.save(self.to_state()):
             return True
-        print("⚠️ 데이터를 파일에 저장하지 못했습니다.")
+        print(
+            "⚠️ 데이터를 파일에 저장하지 못했습니다.\n"
+            "   → state.json이 있는 폴더의 쓰기 권한과 디스크 여유 공간을 확인한 뒤 다시 실행해 주세요.\n"
+            "   → 기존 state.json은 그대로 남아 있어 마지막으로 저장된 상태는 보존됩니다."
+        )
         return False
 
     def to_state(self) -> dict:
