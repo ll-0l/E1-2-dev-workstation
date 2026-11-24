@@ -53,6 +53,32 @@ class StateStorageTest(unittest.TestCase):
         self.assertEqual((None, "corrupted"), self.storage.load())
         self.assertTrue(Path(f"{self.path}.bak").exists())
 
+    def test_backup_keeps_only_latest_corrupted_file(self) -> None:
+        # 보존 정책: state.json.bak은 가장 최근 손상본 1개만 유지한다
+        self.path.write_text("{first broken", encoding="utf-8")
+        self.storage.load()
+        self.path.write_text("{second broken", encoding="utf-8")
+        self.storage.load()
+
+        backups = sorted(p.name for p in Path(self.temp_dir.name).iterdir() if ".bak" in p.name)
+        self.assertEqual(["state.json.bak"], backups)
+        self.assertEqual("{second broken", Path(f"{self.path}.bak").read_text(encoding="utf-8"))
+
+    def test_manual_recovery_from_backup(self) -> None:
+        # 복구 절차: .bak을 고쳐 state.json으로 되돌리면 다시 정상 로드된다
+        broken = {"quizzes": [{"question": "문제", "choices": ["가", "나", "다"], "answer": 1}]}
+        self.path.write_text(json.dumps(broken, ensure_ascii=False), encoding="utf-8")
+        self.assertEqual("corrupted", self.storage.load()[1])
+
+        backup = Path(f"{self.path}.bak")
+        repaired = json.loads(backup.read_text(encoding="utf-8"))
+        repaired["quizzes"][0]["choices"].append("라")
+        self.path.write_text(json.dumps(repaired, ensure_ascii=False), encoding="utf-8")
+
+        state, status = self.storage.load()
+        self.assertEqual("loaded", status)
+        self.assertEqual(["가", "나", "다", "라"], state["quizzes"][0]["choices"])
+
     def test_bool_best_score_is_corrupted(self) -> None:
         state = {"quizzes": [valid_quiz()], "best_score": True}
         self.path.write_text(json.dumps(state), encoding="utf-8")
