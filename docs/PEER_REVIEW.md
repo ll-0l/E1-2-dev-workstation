@@ -2,7 +2,7 @@
 
 동료평가 때 **평가 항목 ↔ 내 과제의 해당 위치**를 바로 찾고, 질문에 답할 수 있도록 정리한 문서입니다.
 
-- 평가 항목 번호(#1~#20)는 AI 사전평가 항목 순서를 따릅니다. 1차 평가 14/20, 보완 후 2차 평가 **20/20 PASS** (2026-11-24).
+- 평가 항목 번호(#1~#20)는 AI 사전평가 항목 순서를 따릅니다. 1차 평가 14/20 → 2차 **20/20 PASS** → 3차 **20/20 (100%)** (2026-11-24).
 - 코드 링크의 줄 번호는 이 문서를 작성한 시점 기준입니다.
 - 관련 문서: [README](../README.md) · [실행 로그](RUN_LOG.md) · [Git 증빙](GIT_EVIDENCE.md)
 - 🙋 **처음 배우는 분용 쉬운 말 버전**: [PEER_REVIEW_EASY.md](PEER_REVIEW_EASY.md) (비유와 말하는 투로 정리, 시연 대본, 용어 사전 포함)
@@ -14,6 +14,7 @@
 4. [시연 순서 (약 5분)](#4-시연-순서-약-5분)
 5. [사전평가 반영 내역 (1차)](#5-사전평가-반영-내역-1차)
 6. [재평가 보완 내역 (2차)](#6-재평가-보완-내역-2차)
+7. [3차 평가 보완 내역](#7-3차-평가-보완-내역)
 
 ---
 
@@ -21,25 +22,25 @@
 
 | # | 평가 주제 | 1차 → 2차 평가 | 코드 위치 | 문서 위치 | 바로 보여줄 것 |
 |---|---|---|---|---|---|
-| 1 | 메뉴 출력과 기능 선택 | PASS → PASS | [quiz_game.py `menu_items`](../quiz_game.py#L34), [`run`](../quiz_game.py#L47) | README 4장 메뉴 | `python3 main.py` 실행 화면, [RUN_LOG 1](RUN_LOG.md#1-첫-실행--퀴즈-추가) |
-| 2 | 퀴즈 풀기, 정답 판정, 입력 검증 | PASS → PASS | [quiz_session.py `play`](../quiz_session.py#L34), [정답 판정](../quiz_session.py#L65), [input_utils `read_int`](../input_utils.py#L22) | README 4장 입력·예외 처리 표 | 메뉴 1 → `h`(힌트), `abc`, `0` 입력 |
-| 3 | 퀴즈 추가와 파일 저장(영속성) | PASS → PASS | [quiz_game.py `add_quiz`](../quiz_game.py#L96), [`save`](../quiz_game.py#L257) | README 6-1 쓰는 시점, 6-4 | 퀴즈 추가 → 종료 → 재실행 시 "퀴즈 13개" |
-| 4 | 기본 퀴즈 5개 이상 | PASS → PASS | [default_quizzes.py](../default_quizzes.py#L8) (12개) | README 2장 선정 기준 | 메뉴 3 목록 |
+| 1 | 메뉴 출력과 기능 선택 | PASS → PASS | [quiz_game.py `menu_items`](../quiz_game.py#L42), [`run`](../quiz_game.py#L55) | README 4장 메뉴 | `python3 main.py` 실행 화면, [RUN_LOG 1](RUN_LOG.md#1-첫-실행--퀴즈-추가) |
+| 2 | 퀴즈 풀기, 정답 판정, 입력 검증 | PASS → PASS | [quiz_session.py `play`](../quiz_session.py#L34), [정답 판정](../quiz_session.py#L65), [input_utils `read_int`](../input_utils.py#L28) | README 4장 입력·예외 처리 표 | 메뉴 1 → `h`(힌트), `abc`, `0` 입력 |
+| 3 | 퀴즈 추가와 파일 저장(영속성) | PASS → PASS | [quiz_game.py `add_quiz`](../quiz_game.py#L104), [`save`](../quiz_game.py#L274) | README 6-1 쓰는 시점, 6-4 | 퀴즈 추가 → 종료 → 재실행 시 "퀴즈 13개" |
+| 4 | 기본 퀴즈 5개 이상 | PASS → PASS | [default_quizzes.py](../default_quizzes.py#L9) (12개) | README 2장 선정 기준 | 메뉴 3 목록 |
 | 5 | GitHub 원격 저장소와 10개 이상 커밋 | FAIL → **PASS** | — | [GIT_EVIDENCE 1·2장](GIT_EVIDENCE.md#1-원격-저장소), README 9-1 | `git remote -v`, `git log --no-merges --oneline \| wc -l` |
 | 6 | 브랜치 생성·병합 기록 | FAIL → **PASS** | — | [GIT_EVIDENCE 3장](GIT_EVIDENCE.md#3-브랜치와-병합-기록), README 9-3 | `git log --oneline --graph` |
 | 7 | clone / pull 실습 | FAIL → **PASS** | — | [GIT_EVIDENCE 4장](GIT_EVIDENCE.md#4-clone--pull-실습), README 9-4 | 4-2의 clone → push → pull 원문 |
-| 8 | 클래스 책임 분리 | PASS → PASS | [Quiz](../quiz.py#L9), [QuizSession](../quiz_session.py#L15), [QuizGame](../quiz_game.py#L26), [StateStorage](../storage.py#L18) | README 5-2 (클래스별 주요 메서드) | README 5-2 표 |
+| 8 | 클래스 책임 분리 | PASS → PASS | [Quiz](../quiz.py#L9), [QuizSession](../quiz_session.py#L15), [QuizGame](../quiz_game.py#L33), [StateStorage](../storage.py#L29) | README 5-2 (클래스별 주요 메서드) | README 5-2 표 |
 | 9 | 입력 검증과 데이터 IO 분리 | PASS → PASS | [input_utils.py](../input_utils.py), [storage.py](../storage.py) | README 5-4 | `StateStorage`에 `print`/`input`이 없음 |
-| 10 | state.json 경로와 읽기/쓰기 | PASS → PASS | [`DEFAULT_STATE_PATH`](../storage.py#L12), [`load`](../storage.py#L21), [`save`](../storage.py#L35), [QuizGame.load](../quiz_game.py#L232) | README 6-1, 6-3 불러오기 흐름 | 재실행 시 "📂 저장된 데이터를 불러왔습니다" |
-| 11 | Ctrl+C / EOF 안전 종료 | PASS → PASS | [quiz_game.py `except (KeyboardInterrupt, EOFError)`](../quiz_game.py#L58) | README 4장 표, 6-4 | 실행 중 Ctrl+C → 안내 후 종료 |
+| 10 | state.json 경로와 읽기/쓰기 | PASS → PASS | [`DEFAULT_STATE_PATH`](../storage.py#L12), [`load`](../storage.py#L32), [`save`](../storage.py#L48), [QuizGame.load](../quiz_game.py#L241) | README 6-1, 6-3 불러오기 흐름 | 재실행 시 "📂 저장된 데이터를 불러왔습니다" |
+| 11 | Ctrl+C / EOF 안전 종료 | PASS → PASS | [quiz_game.py `except (KeyboardInterrupt, EOFError)`](../quiz_game.py#L66) | README 4장 표, 6-4 | 실행 중 Ctrl+C → 안내 후 종료 |
 | 12 | 커밋 메시지 규칙 | PASS → PASS | — | README 9-2 (규칙 + 예시) | `git log --oneline` |
 | 13 | 클래스를 사용한 이유 | FAIL → **PASS** | — | README 5-3 | 아래 [Q13](#13-클래스를-사용한-이유) 답변 |
-| 14 | JSON을 사용한 이유 | PASS → PASS | [storage.py `json.dump(..., ensure_ascii=False)`](../storage.py#L41) | README 6-6 (CSV/SQLite/pickle 비교) | `state.json`을 열어 한글 확인 |
-| 15 | 파일 IO 예외 처리 | PASS → PASS | [storage.py `load` 예외 분기](../storage.py#L22), [`save` 예외](../storage.py#L45) | README 4장 표(메시지/조치), 6-4 | 깨진 state.json으로 실행 |
+| 14 | JSON을 사용한 이유 | PASS → PASS | [storage.py `json.dump(..., ensure_ascii=False)`](../storage.py#L54) | README 6-6 (CSV/SQLite/pickle 비교) | `state.json`을 열어 한글 확인 |
+| 15 | 파일 IO 예외 처리 | PASS → PASS | [storage.py `load` 예외 분기](../storage.py#L33), [`save` 예외](../storage.py#L58) | README 4장 표(메시지/조치), 6-4 | 깨진 state.json으로 실행 |
 | 16 | 브랜치 전략 | PASS → PASS | — | README 9-3, [AGENTS.md](../AGENTS.md) | `git log --graph`의 병합 모양 |
-| 17 | state.json 스키마 설계 | PASS → PASS | [storage.py `_normalize_state`](../storage.py#L63) | README 6-2 (필드별 설계 의도) | README 6-2 표 |
+| 17 | state.json 스키마 설계 | PASS → PASS | [storage.py `_normalize_state`](../storage.py#L76) | README 6-2 (필드별 설계 의도) | README 6-2 표 |
 | 18 | JSON 방식의 한계 | FAIL → **PASS** | — | README 6-7 | 아래 [Q18](#18-json-방식의-한계) 답변 |
-| 19 | 손상 파일 대응 | PASS → PASS | [storage.py `_backup_corrupted_file`](../storage.py#L52) | README 6-5 (백업 보존 정책) | `echo '{broken' > state.json` 후 실행 |
+| 19 | 손상 파일 대응 | PASS → PASS | [storage.py `_backup_corrupted_file`](../storage.py#L65) | README 6-5 (백업 보존 정책) | `echo '{broken' > state.json` 후 실행 |
 | 20 | 요구사항 변경 시 영향 범위 | FAIL → **PASS** | [quiz.py `CHOICE_COUNT`](../quiz.py#L3) 등 | README 8장 | 아래 [Q20](#20-요구사항-변경-영향-범위) 답변 |
 
 ---
@@ -169,10 +170,10 @@
 ### Python 기초
 | 질문 | 답변 | 내 코드의 예 |
 |---|---|---|
-| 변수란? 왜 쓰나? | 값에 이름을 붙여 저장해 두는 것. 같은 값을 여러 번 쓰고, 값의 의미를 이름으로 드러내기 위해 사용 | `total = len(self.quizzes)` ([quiz_game.py](../quiz_game.py#L199) `_ask_question_count`) |
+| 변수란? 왜 쓰나? | 값에 이름을 붙여 저장해 두는 것. 같은 값을 여러 번 쓰고, 값의 의미를 이름으로 드러내기 위해 사용 | `total = len(self.quizzes)` ([quiz_game.py](../quiz_game.py#L208) `_ask_question_count`) |
 | int/str/bool/list/dict 차이 | int 정수, str 문자열, bool 참/거짓, list 순서 있는 묶음(인덱스로 접근), dict 키-값 묶음(키로 접근) | 정답 `answer: int`, 문제 `question: str`, `self.running: bool`, 선택지 `choices: list`, 저장 상태 `to_state()`가 반환하는 `dict` |
-| if/elif/else | 조건을 위에서부터 검사해 처음 참인 블록 하나만 실행 | [QuizGame.load](../quiz_game.py#L232): 상태가 `missing` / `corrupted` / 그 외인지에 따라 다른 처리 |
-| for vs while | for는 **정해진 묶음을 하나씩** 돌 때, while은 **조건이 참인 동안 횟수 모르게** 반복할 때 | for: 문제를 하나씩 출제 ([quiz_session.py](../quiz_session.py#L43)) / while: 올바른 입력이 올 때까지 재입력 ([input_utils.py](../input_utils.py#L36)), 종료 전까지 메뉴 반복 ([quiz_game.py](../quiz_game.py#L52)) |
+| if/elif/else | 조건을 위에서부터 검사해 처음 참인 블록 하나만 실행 | [QuizGame.load](../quiz_game.py#L241): 상태가 `missing` / `corrupted` / 그 외인지에 따라 다른 처리 |
+| for vs while | for는 **정해진 묶음을 하나씩** 돌 때, while은 **조건이 참인 동안 횟수 모르게** 반복할 때 | for: 문제를 하나씩 출제 ([quiz_session.py](../quiz_session.py#L43)) / while: 올바른 입력이 올 때까지 재입력 ([input_utils.py](../input_utils.py#L42)), 종료 전까지 메뉴 반복 ([quiz_game.py](../quiz_game.py#L60)) |
 | 함수, 매개변수, 반환값 | 함수는 이름 붙은 코드 묶음. 매개변수로 값을 받고 `return`으로 결과를 돌려줌 | `read_int(prompt, min_value, max_value, allow)` → 검증된 정수 반환, `calculate_score(correct, hinted_correct, total)` → 점수 반환 |
 
 ### 클래스와 객체
@@ -186,9 +187,9 @@
 ### 파일 입출력과 예외 처리
 | 질문 | 답변 | 내 코드의 예 |
 |---|---|---|
-| 파일 열기·읽기·쓰기 과정 | `open(경로, 모드, encoding)`으로 열고 → `read`/`write` → 닫기. `with` 문을 쓰면 블록이 끝날 때 자동으로 닫힘 | [storage.py load](../storage.py#L23): `with self.path.open("r", encoding="utf-8")`, [save](../storage.py#L40): `"w"` 모드 |
+| 파일 열기·읽기·쓰기 과정 | `open(경로, 모드, encoding)`으로 열고 → `read`/`write` → 닫기. `with` 문을 쓰면 블록이 끝날 때 자동으로 닫힘 | [storage.py load](../storage.py#L34): `with self.path.open("r", encoding="utf-8")`, [save](../storage.py#L53): `"w"` 모드 |
 | JSON이란? 왜 쓰나? | 키-값과 목록으로 데이터를 표현하는 텍스트 형식. 파이썬 dict/list와 1:1로 바뀌고 사람이 읽을 수 있음 | `json.load` → dict, `json.dump(..., ensure_ascii=False, indent=2)` |
-| try/except | 오류가 날 수 있는 코드를 `try`에 두고, 오류 종류별로 `except`에서 대신 처리해 프로그램이 멈추지 않게 함 | [input_utils.py](../input_utils.py#L46) `int(raw)` 실패 → `ValueError`, [storage.py](../storage.py#L22) 파일 없음/손상/OS 오류 분기, [quiz_game.py](../quiz_game.py#L58) Ctrl+C/EOF |
+| try/except | 오류가 날 수 있는 코드를 `try`에 두고, 오류 종류별로 `except`에서 대신 처리해 프로그램이 멈추지 않게 함 | [input_utils.py](../input_utils.py#L53) `int(raw)` 실패 → `ValueError`, [storage.py](../storage.py#L33) 파일 없음/손상/OS 오류 분기, [quiz_game.py](../quiz_game.py#L66) Ctrl+C/EOF |
 
 ### Git
 | 질문 | 답변 |
@@ -217,7 +218,7 @@
 | 6 | `Ctrl+C`로 종료 → 다시 실행 → "퀴즈 13개, 최고점수 N점" | #3, #11 |
 | 7 | `cat state.json`으로 구조와 한글 확인 | #10, #14, #17 |
 | 8 | `echo '{broken' > state.json` → 실행 → 복구 안내, `ls state.json.bak` | #15, #19 |
-| 9 | `python3 -m unittest discover -s tests` → 45개 OK | #2, #15 |
+| 9 | `python3 -m unittest discover -s tests` → 61개 OK | #2, #15 |
 | 10 | `git log --oneline --graph`, `git remote -v` | #5, #6, #12, #16 |
 
 ---
@@ -282,3 +283,41 @@
 - *Q. 문구를 왜 표준화했나요?* → 같은 종류의 오류가 화면마다 다르게 보이면 사용자가 무엇을 해야 할지 헷갈립니다. 입력 오류 문구는 `read_int`/`read_text`/`_confirm` 세 곳에서만 만들고, 모두 "문제 → 조치" 순서를 지킵니다.
 - *Q. 1만 건이 기준인 이유는?* → 실측에서 1만 건일 때 저장이 약 0.1초로, 사람이 지연을 느끼기 시작하는 수준입니다. 매 판 저장하는 구조라 이 시점부터 상한·분리·DB를 검토합니다.
 - *Q. 저장 실패를 어떻게 재현했나요?* → 폴더를 쓰기 금지(`chmod 555`)로 바꿔 임시 파일 생성이 실패하게 만들었고, 실행 후 기존 `state.json`이 그대로인 것까지 확인했습니다.
+
+---
+
+## 7. 3차 평가 보완 내역
+
+3차 평가는 **20/20 (100%)**였고, 남은 의견 중 구현이 필요한 것은 실제 코드로 만들었습니다. 테스트는 45개 → **61개**, GitHub Actions CI가 Python 3.10·3.12·3.13에서 모두 통과합니다.
+
+| # | 3차 평가 의견 | 보완 내용 | 위치 |
+|---|---|---|---|
+| 1 | 메뉴 안내 문구 일관성 | 프롬프트 형식 `{질문} ({허용 값}): ` 표 | README 4장 |
+| 2 | 입력 실패 디버그 로그 | `QUIZ_DEBUG=1`이면 잘못된 입력·불러오기/저장 결과를 `quiz_debug.log`에 기록 (평소 화면은 그대로) | `input_utils.py`, `main.py`, [RUN_LOG 4-11](RUN_LOG.md#4-11-디버그-로그-quiz_debug1) |
+| 3 | 저장 실패 조치 체크리스트 | 즉시 할 일 4단계 + 상황별(권한·디스크·드라이브) 확인 명령과 조치 표 | README 6-4 |
+| 4 | 기본 퀴즈 교체 검증 자동화 | `scripts/validate_quizzes.py` (개수·형식·중복·힌트·쏠림 검사, 오류 시 종료 코드 1) | README 2장 |
+| 5 | 원격 접근 불가 시 해시 참조 | 주요 커밋 해시 7개와 `git cat-file`/`ls-remote` 대조 방법 | README 9-1 |
+| 6 | 병합 메시지 일관성 | 병합 커밋 본문에 목적·`Refs: #번호` 형식 | [CONTRIBUTING 2장](CONTRIBUTING.md#2-작업-흐름) |
+| 7 | clone 후 해시 비교 | clone 폴더에서 `rev-parse`/`ls-remote`/`fetch`/`pull` 후 일치 확인한 실제 출력 | [GIT_EVIDENCE 4-3](GIT_EVIDENCE.md#4-3-clone-결과를-해시로-검증하기-2026-11-24) |
+| 8 | 오류 전파 정책 | 문제별 발생 위치·처리 위치·방식 표, "말하기는 QuizGame·input_utils만, 종료는 run만" 원칙 | README 5-2 |
+| 9 | 입력·저장 경계 케이스 | 추가 중 오입력/중간 Ctrl+C/저장 실패/보호 모드 4가지 표 | README 5-4 |
+| 10 | 동시 실행 권장 설정 | 6-1에 요약(한 폴더 한 실행) + 6-8 연결 | README 6-1 |
+| 11 | 강제 종료 후 임시 파일 | 반쯤 쓴 `.tmp`가 남아도 무시하고 다음 저장에서 정리됨을 **테스트로 검증** | `test_leftover_temp_file_from_crash_is_ignored_then_replaced`, README 6-4 |
+| 12 | 커밋 메시지 템플릿 | `.gitmessage` 파일과 사용법 | `.gitmessage`, [CONTRIBUTING 1장](CONTRIBUTING.md#커밋-메시지-템플릿) |
+| 13 | 클래스 관계도 | ASCII 관계도와 읽는 순서 안내 | README 5-2 |
+| 14 | JSON 백업·동기화 절차 | 백업, 한 방향 동기화, 복사 후 확인, 보안(권한·개인정보) 4단계 | README 6-8 |
+| 15 | 저장 실패 상황 예시와 조치 | (3번과 같은 표) | README 6-4 |
+| 16 | 병합 충돌 해결 정책 | Git 충돌(담당자 우선)·규칙 충돌(계약 > 사용자 경험 > 선병합), 실제 사례 | [CONTRIBUTING 4장](CONTRIBUTING.md#4-병합-충돌-해결-정책) |
+| 17 | 마이그레이션 테스트 | `CURRENT_VERSION`·`MIGRATIONS` 변환 구조 **구현** + 테스트 4개. 이 과정에서 **미래 버전 파일을 손상으로 오판해 덮어쓰던 위험을 발견해 수정**(보호 모드) | `storage.py`, README 6-9, [RUN_LOG 4-9](RUN_LOG.md#4-9-더-새로운-버전의-데이터-파일) |
+| 18 | history 상한 미구현 | 최근 1,000건 롤링 **구현**, 최고 기록은 유지 + 테스트 | `QuizGame.HISTORY_MAX`, README 6-7 |
+| 19 | 백업 자동 검사·복원 | `scripts/restore_backup.py` (검사 → `--restore`, 손상 백업은 거부, 이전 파일 보관) + 테스트 | README 6-5, [RUN_LOG 4-10](RUN_LOG.md#4-10-백업-검사복원-스크립트) |
+| 20 | 체크리스트 스크립트·CI | `scripts/run_checks.py`(문법·테스트·퀴즈 검증·실행) + GitHub Actions(3.10/3.12/3.13) | README 8장·9-6, `.github/workflows/ci.yml` |
+
+**함께 고친 실제 문제**
+- 읽기 오류 때 시작 시점에만 저장을 막고, 이후 퀴즈 추가·종료 때는 저장해서 **원본을 덮어쓸 수 있던 문제** → 보호 모드로 이번 실행 동안 저장을 모두 막음 (`test_read_error_blocks_all_later_saves`)
+- 백업 검사 결과에 `최고점수 None`이 보이던 문구 → "기록 없음"
+
+**예상 질문**
+- *Q. 보호 모드가 뭐예요?* → 파일을 못 읽었거나 더 새 버전 프로그램이 만든 파일일 때, 원본을 지키려고 이번 실행 동안 **저장을 아예 안 하는 상태**예요. 게임은 기본 퀴즈로 할 수 있지만 끝나면 반영되지 않는다고 안내합니다.
+- *Q. 기록을 왜 1,000건으로 제한했나요?* → 실측에서 1,000건이 약 162KB, 저장 약 11ms라 체감 지연이 없습니다. 최고 기록은 따로 저장돼서 지워지지 않아요.
+- *Q. CI는 왜 3.10에서도 돌리나요?* → 과제 조건이 "Python 3.10 이상"이라 최소 버전에서 실제로 되는지 확인하려고요. 제 컴퓨터는 3.16 알파라서 3.10 확인은 CI가 해 줍니다.
