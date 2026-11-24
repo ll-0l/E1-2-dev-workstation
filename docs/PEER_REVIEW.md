@@ -5,7 +5,7 @@
 - 평가 항목 번호(#1~#20)는 AI 사전평가 항목 순서를 따릅니다. 1차 평가 14/20 → 2차 **20/20 PASS** → 3차 **20/20 (100%)** (2026-11-24).
 - 코드 링크의 줄 번호는 이 문서를 작성한 시점 기준입니다.
 - 관련 문서: [README](../README.md) · [실행 로그](RUN_LOG.md) · [Git 증빙](GIT_EVIDENCE.md)
-- 🙋 **처음 배우는 분용 쉬운 말 버전**: [PEER_REVIEW_EASY.md](PEER_REVIEW_EASY.md) (비유와 말하는 투로 정리, 시연 대본, 용어 사전 포함)
+- **처음 배우는 분용 쉬운 말 버전**: [PEER_REVIEW_EASY.md](PEER_REVIEW_EASY.md) (비유와 말하는 투로 정리, 시연 대본, 용어 사전 포함)
 
 ## 목차
 1. [평가 항목 일대일 대응표](#1-평가-항목-일대일-대응표)
@@ -31,7 +31,7 @@
 | 7 | clone / pull 실습 | FAIL → **PASS** | — | [GIT_EVIDENCE 4장](GIT_EVIDENCE.md#4-clone--pull-실습), README 8장 | 4-2의 clone → push → pull 원문 |
 | 8 | 클래스 책임 분리 | PASS → PASS | [Quiz](../quiz.py#L9), [QuizSession](../quiz_session.py#L15), [QuizGame](../quiz_game.py#L33), [StateStorage](../storage.py#L29) | DESIGN 3장 (클래스별 주요 메서드) | DESIGN 3장 표 |
 | 9 | 입력 검증과 데이터 IO 분리 | PASS → PASS | [input_utils.py](../input_utils.py), [storage.py](../storage.py) | DESIGN 5장 | `StateStorage`에 `print`/`input`이 없음 |
-| 10 | state.json 경로와 읽기/쓰기 | PASS → PASS | [`DEFAULT_STATE_PATH`](../storage.py#L12), [`load`](../storage.py#L32), [`save`](../storage.py#L48), [QuizGame.load](../quiz_game.py#L241) | DATA 1장, 6-3 불러오기 흐름 | 재실행 시 "📂 저장된 데이터를 불러왔습니다" |
+| 10 | state.json 경로와 읽기/쓰기 | PASS → PASS | [`DEFAULT_STATE_PATH`](../storage.py#L12), [`load`](../storage.py#L32), [`save`](../storage.py#L48), [QuizGame.load](../quiz_game.py#L241) | DATA 1장, 6-3 불러오기 흐름 | 재실행 시 "저장된 데이터를 불러왔습니다" |
 | 11 | Ctrl+C / EOF 안전 종료 | PASS → PASS | [quiz_game.py `except (KeyboardInterrupt, EOFError)`](../quiz_game.py#L66) | DESIGN 1장 표, 6-4 | 실행 중 Ctrl+C → 안내 후 종료 |
 | 12 | 커밋 메시지 규칙 | PASS → PASS | — | CONTRIBUTING "커밋 단위 기준" (규칙 + 예시) | `git log --oneline` |
 | 13 | 클래스를 사용한 이유 | FAIL → **PASS** | — | DESIGN 4장 | 아래 [Q13](#13-클래스를-사용한-이유) 답변 |
@@ -53,7 +53,7 @@
 
 ### 2. 퀴즈 풀기, 정답 판정, 입력 검증
 **Q. 정답 판정은 어디서 하나요?**
-`Quiz.is_correct(user_answer)`가 `user_answer == self.answer`로 판정합니다. `QuizSession.play()`가 문제마다 `display()`로 출력하고 → 입력을 받고 → `is_correct()` 결과에 따라 "✅ 정답" 또는 "❌ 오답 + 정답 공개"를 출력합니다.
+`Quiz.is_correct(user_answer)`가 `user_answer == self.answer`로 판정합니다. `QuizSession.play()`가 문제마다 `display()`로 출력하고 → 입력을 받고 → `is_correct()` 결과에 따라 정답 또는 오답과 정답 공개 메시지를 출력합니다.
 
 **Q. 잘못된 답 입력은 어떻게 처리하나요?**
 `input_utils.read_int(prompt, 1, 4, allow=("h",))`가 처리합니다. 앞뒤 공백을 지우고, 빈 입력이거나 `int()` 변환에 실패하거나(`try/except ValueError`) 1~4 범위 밖이면 안내 후 다시 묻습니다. `h`는 허용 키워드라 힌트 요청으로 돌려줍니다. 테스트는 `tests/test_input_utils.py`, `tests/test_quiz_game_run.py`에 있습니다.
