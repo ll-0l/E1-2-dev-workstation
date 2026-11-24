@@ -2,7 +2,7 @@
 
 동료평가 때 **평가 항목 ↔ 내 과제의 해당 위치**를 바로 찾고, 질문에 답할 수 있도록 정리한 문서입니다.
 
-- 평가 항목 번호(#1~#20)는 AI 사전평가(2026-11-24) 항목 순서를 따릅니다.
+- 평가 항목 번호(#1~#20)는 AI 사전평가 항목 순서를 따릅니다. 1차 평가 14/20, 보완 후 2차 평가 **20/20 PASS** (2026-11-24).
 - 코드 링크의 줄 번호는 이 문서를 작성한 시점 기준입니다.
 - 관련 문서: [README](../README.md) · [실행 로그](RUN_LOG.md) · [Git 증빙](GIT_EVIDENCE.md)
 
@@ -11,34 +11,35 @@
 2. [항목별 예상 질문과 답변](#2-항목별-예상-질문과-답변)
 3. [학습 목표 질문과 답변](#3-학습-목표-질문과-답변)
 4. [시연 순서 (약 5분)](#4-시연-순서-약-5분)
-5. [사전평가 반영 내역](#5-사전평가-반영-내역)
+5. [사전평가 반영 내역 (1차)](#5-사전평가-반영-내역-1차)
+6. [재평가 보완 내역 (2차)](#6-재평가-보완-내역-2차)
 
 ---
 
 ## 1. 평가 항목 일대일 대응표
 
-| # | 평가 주제 | 사전평가 | 코드 위치 | 문서 위치 | 바로 보여줄 것 |
+| # | 평가 주제 | 1차 → 2차 평가 | 코드 위치 | 문서 위치 | 바로 보여줄 것 |
 |---|---|---|---|---|---|
-| 1 | 메뉴 출력과 기능 선택 | PASS | [quiz_game.py `menu_items`](../quiz_game.py#L34), [`run`](../quiz_game.py#L47) | README 4장 메뉴 | `python3 main.py` 실행 화면, [RUN_LOG 1](RUN_LOG.md#1-첫-실행--퀴즈-추가) |
-| 2 | 퀴즈 풀기, 정답 판정, 입력 검증 | PASS | [quiz_session.py `play`](../quiz_session.py#L34), [정답 판정](../quiz_session.py#L65), [input_utils `read_int`](../input_utils.py#L22) | README 4장 입력·예외 처리 표 | 메뉴 1 → `h`(힌트), `abc`, `0` 입력 |
-| 3 | 퀴즈 추가와 파일 저장(영속성) | PASS | [quiz_game.py `add_quiz`](../quiz_game.py#L96), [`save`](../quiz_game.py#L251) | README 6-1 쓰는 시점, 6-4 | 퀴즈 추가 → 종료 → 재실행 시 "퀴즈 13개" |
-| 4 | 기본 퀴즈 5개 이상 | PASS | [default_quizzes.py](../default_quizzes.py#L8) (12개) | README 2장 선정 기준 | 메뉴 3 목록 |
-| 5 | GitHub 원격 저장소와 10개 이상 커밋 | **FAIL → 보완** | — | [GIT_EVIDENCE 1·2장](GIT_EVIDENCE.md#1-원격-저장소), README 9-1 | `git remote -v`, `git log --no-merges --oneline \| wc -l` |
-| 6 | 브랜치 생성·병합 기록 | **FAIL → 보완** | — | [GIT_EVIDENCE 3장](GIT_EVIDENCE.md#3-브랜치와-병합-기록), README 9-3 | `git log --oneline --graph` |
-| 7 | clone / pull 실습 | **FAIL → 보완** | — | [GIT_EVIDENCE 4장](GIT_EVIDENCE.md#4-clone--pull-실습), README 9-4 | 4-2의 clone → push → pull 원문 |
-| 8 | 클래스 책임 분리 | PASS | [Quiz](../quiz.py#L9), [QuizSession](../quiz_session.py#L15), [QuizGame](../quiz_game.py#L26), [StateStorage](../storage.py#L18) | README 5-2 (클래스별 주요 메서드) | README 5-2 표 |
-| 9 | 입력 검증과 데이터 IO 분리 | PASS | [input_utils.py](../input_utils.py), [storage.py](../storage.py) | README 5-4 | `StateStorage`에 `print`/`input`이 없음 |
-| 10 | state.json 경로와 읽기/쓰기 | PASS | [`DEFAULT_STATE_PATH`](../storage.py#L12), [`load`](../storage.py#L21), [`save`](../storage.py#L35), [QuizGame.load](../quiz_game.py#L226) | README 6-1, 6-3 불러오기 흐름 | 재실행 시 "📂 저장된 데이터를 불러왔습니다" |
-| 11 | Ctrl+C / EOF 안전 종료 | PASS | [quiz_game.py `except (KeyboardInterrupt, EOFError)`](../quiz_game.py#L58) | README 4장 표, 6-4 | 실행 중 Ctrl+C → 안내 후 종료 |
-| 12 | 커밋 메시지 규칙 | PASS | — | README 9-2 (규칙 + 예시) | `git log --oneline` |
-| 13 | 클래스를 사용한 이유 | **FAIL → 보완** | — | README 5-3 | 아래 [Q13](#13-클래스를-사용한-이유) 답변 |
-| 14 | JSON을 사용한 이유 | PASS | [storage.py `json.dump(..., ensure_ascii=False)`](../storage.py#L41) | README 6-6 (CSV/SQLite/pickle 비교) | `state.json`을 열어 한글 확인 |
-| 15 | 파일 IO 예외 처리 | PASS | [storage.py `load` 예외 분기](../storage.py#L22), [`save` 예외](../storage.py#L45) | README 4장 표(메시지/조치), 6-4 | 깨진 state.json으로 실행 |
-| 16 | 브랜치 전략 | PASS | — | README 9-3, [AGENTS.md](../AGENTS.md) | `git log --graph`의 병합 모양 |
-| 17 | state.json 스키마 설계 | PASS | [storage.py `_normalize_state`](../storage.py#L63) | README 6-2 (필드별 설계 의도) | README 6-2 표 |
-| 18 | JSON 방식의 한계 | **FAIL → 보완** | — | README 6-7 | 아래 [Q18](#18-json-방식의-한계) 답변 |
-| 19 | 손상 파일 대응 | PASS | [storage.py `_backup_corrupted_file`](../storage.py#L52) | README 6-5 (백업 보존 정책) | `echo '{broken' > state.json` 후 실행 |
-| 20 | 요구사항 변경 시 영향 범위 | **FAIL → 보완** | [quiz.py `CHOICE_COUNT`](../quiz.py#L3) 등 | README 8장 | 아래 [Q20](#20-요구사항-변경-영향-범위) 답변 |
+| 1 | 메뉴 출력과 기능 선택 | PASS → PASS | [quiz_game.py `menu_items`](../quiz_game.py#L34), [`run`](../quiz_game.py#L47) | README 4장 메뉴 | `python3 main.py` 실행 화면, [RUN_LOG 1](RUN_LOG.md#1-첫-실행--퀴즈-추가) |
+| 2 | 퀴즈 풀기, 정답 판정, 입력 검증 | PASS → PASS | [quiz_session.py `play`](../quiz_session.py#L34), [정답 판정](../quiz_session.py#L65), [input_utils `read_int`](../input_utils.py#L22) | README 4장 입력·예외 처리 표 | 메뉴 1 → `h`(힌트), `abc`, `0` 입력 |
+| 3 | 퀴즈 추가와 파일 저장(영속성) | PASS → PASS | [quiz_game.py `add_quiz`](../quiz_game.py#L96), [`save`](../quiz_game.py#L257) | README 6-1 쓰는 시점, 6-4 | 퀴즈 추가 → 종료 → 재실행 시 "퀴즈 13개" |
+| 4 | 기본 퀴즈 5개 이상 | PASS → PASS | [default_quizzes.py](../default_quizzes.py#L8) (12개) | README 2장 선정 기준 | 메뉴 3 목록 |
+| 5 | GitHub 원격 저장소와 10개 이상 커밋 | FAIL → **PASS** | — | [GIT_EVIDENCE 1·2장](GIT_EVIDENCE.md#1-원격-저장소), README 9-1 | `git remote -v`, `git log --no-merges --oneline \| wc -l` |
+| 6 | 브랜치 생성·병합 기록 | FAIL → **PASS** | — | [GIT_EVIDENCE 3장](GIT_EVIDENCE.md#3-브랜치와-병합-기록), README 9-3 | `git log --oneline --graph` |
+| 7 | clone / pull 실습 | FAIL → **PASS** | — | [GIT_EVIDENCE 4장](GIT_EVIDENCE.md#4-clone--pull-실습), README 9-4 | 4-2의 clone → push → pull 원문 |
+| 8 | 클래스 책임 분리 | PASS → PASS | [Quiz](../quiz.py#L9), [QuizSession](../quiz_session.py#L15), [QuizGame](../quiz_game.py#L26), [StateStorage](../storage.py#L18) | README 5-2 (클래스별 주요 메서드) | README 5-2 표 |
+| 9 | 입력 검증과 데이터 IO 분리 | PASS → PASS | [input_utils.py](../input_utils.py), [storage.py](../storage.py) | README 5-4 | `StateStorage`에 `print`/`input`이 없음 |
+| 10 | state.json 경로와 읽기/쓰기 | PASS → PASS | [`DEFAULT_STATE_PATH`](../storage.py#L12), [`load`](../storage.py#L21), [`save`](../storage.py#L35), [QuizGame.load](../quiz_game.py#L232) | README 6-1, 6-3 불러오기 흐름 | 재실행 시 "📂 저장된 데이터를 불러왔습니다" |
+| 11 | Ctrl+C / EOF 안전 종료 | PASS → PASS | [quiz_game.py `except (KeyboardInterrupt, EOFError)`](../quiz_game.py#L58) | README 4장 표, 6-4 | 실행 중 Ctrl+C → 안내 후 종료 |
+| 12 | 커밋 메시지 규칙 | PASS → PASS | — | README 9-2 (규칙 + 예시) | `git log --oneline` |
+| 13 | 클래스를 사용한 이유 | FAIL → **PASS** | — | README 5-3 | 아래 [Q13](#13-클래스를-사용한-이유) 답변 |
+| 14 | JSON을 사용한 이유 | PASS → PASS | [storage.py `json.dump(..., ensure_ascii=False)`](../storage.py#L41) | README 6-6 (CSV/SQLite/pickle 비교) | `state.json`을 열어 한글 확인 |
+| 15 | 파일 IO 예외 처리 | PASS → PASS | [storage.py `load` 예외 분기](../storage.py#L22), [`save` 예외](../storage.py#L45) | README 4장 표(메시지/조치), 6-4 | 깨진 state.json으로 실행 |
+| 16 | 브랜치 전략 | PASS → PASS | — | README 9-3, [AGENTS.md](../AGENTS.md) | `git log --graph`의 병합 모양 |
+| 17 | state.json 스키마 설계 | PASS → PASS | [storage.py `_normalize_state`](../storage.py#L63) | README 6-2 (필드별 설계 의도) | README 6-2 표 |
+| 18 | JSON 방식의 한계 | FAIL → **PASS** | — | README 6-7 | 아래 [Q18](#18-json-방식의-한계) 답변 |
+| 19 | 손상 파일 대응 | PASS → PASS | [storage.py `_backup_corrupted_file`](../storage.py#L52) | README 6-5 (백업 보존 정책) | `echo '{broken' > state.json` 후 실행 |
+| 20 | 요구사항 변경 시 영향 범위 | FAIL → **PASS** | [quiz.py `CHOICE_COUNT`](../quiz.py#L3) 등 | README 8장 | 아래 [Q20](#20-요구사항-변경-영향-범위) 답변 |
 
 ---
 
@@ -167,9 +168,9 @@
 ### Python 기초
 | 질문 | 답변 | 내 코드의 예 |
 |---|---|---|
-| 변수란? 왜 쓰나? | 값에 이름을 붙여 저장해 두는 것. 같은 값을 여러 번 쓰고, 값의 의미를 이름으로 드러내기 위해 사용 | `total = len(self.quizzes)` ([quiz_game.py](../quiz_game.py#L193) `_ask_question_count`) |
+| 변수란? 왜 쓰나? | 값에 이름을 붙여 저장해 두는 것. 같은 값을 여러 번 쓰고, 값의 의미를 이름으로 드러내기 위해 사용 | `total = len(self.quizzes)` ([quiz_game.py](../quiz_game.py#L199) `_ask_question_count`) |
 | int/str/bool/list/dict 차이 | int 정수, str 문자열, bool 참/거짓, list 순서 있는 묶음(인덱스로 접근), dict 키-값 묶음(키로 접근) | 정답 `answer: int`, 문제 `question: str`, `self.running: bool`, 선택지 `choices: list`, 저장 상태 `to_state()`가 반환하는 `dict` |
-| if/elif/else | 조건을 위에서부터 검사해 처음 참인 블록 하나만 실행 | [QuizGame.load](../quiz_game.py#L226): 상태가 `missing` / `corrupted` / 그 외인지에 따라 다른 처리 |
+| if/elif/else | 조건을 위에서부터 검사해 처음 참인 블록 하나만 실행 | [QuizGame.load](../quiz_game.py#L232): 상태가 `missing` / `corrupted` / 그 외인지에 따라 다른 처리 |
 | for vs while | for는 **정해진 묶음을 하나씩** 돌 때, while은 **조건이 참인 동안 횟수 모르게** 반복할 때 | for: 문제를 하나씩 출제 ([quiz_session.py](../quiz_session.py#L43)) / while: 올바른 입력이 올 때까지 재입력 ([input_utils.py](../input_utils.py#L36)), 종료 전까지 메뉴 반복 ([quiz_game.py](../quiz_game.py#L52)) |
 | 함수, 매개변수, 반환값 | 함수는 이름 붙은 코드 묶음. 매개변수로 값을 받고 `return`으로 결과를 돌려줌 | `read_int(prompt, min_value, max_value, allow)` → 검증된 정수 반환, `calculate_score(correct, hinted_correct, total)` → 점수 반환 |
 
@@ -215,12 +216,12 @@
 | 6 | `Ctrl+C`로 종료 → 다시 실행 → "퀴즈 13개, 최고점수 N점" | #3, #11 |
 | 7 | `cat state.json`으로 구조와 한글 확인 | #10, #14, #17 |
 | 8 | `echo '{broken' > state.json` → 실행 → 복구 안내, `ls state.json.bak` | #15, #19 |
-| 9 | `python3 -m unittest discover -s tests` → 42개 OK | #2, #15 |
+| 9 | `python3 -m unittest discover -s tests` → 45개 OK | #2, #15 |
 | 10 | `git log --oneline --graph`, `git remote -v` | #5, #6, #12, #16 |
 
 ---
 
-## 5. 사전평가 반영 내역
+## 5. 사전평가 반영 내역 (1차)
 
 | # | 사전평가 지적 | 반영 내용 | 위치 |
 |---|---|---|---|
@@ -240,3 +241,43 @@
 | 14 | JSON 선택 비교 | CSV/SQLite/pickle 비교표 | README 6-6 |
 | 17 | 필드 설계 의도 | 필드별 설계 의도 열 추가 | README 6-2 |
 | 19 | 백업 보존 정책 | 최근 1개 보관, 수동 복구 방법 | README 6-5 |
+
+---
+
+## 6. 재평가 보완 내역 (2차)
+
+2차 평가는 20개 모두 PASS였고, 항목별 "부족한 점"을 아래처럼 보완했습니다. 동료평가에서 같은 지적이 나오면 "보완 내용" 열과 위치를 근거로 답하면 됩니다.
+
+| # | 2차 평가의 부족한 점 | 보완 내용 | 위치 |
+|---|---|---|---|
+| 1 | 잘못된 입력 후 반복 안내 사례 부족 | 실제 실행 사례 8종 추가 (모든 입력 단계 예외, 빈 상태, 손상·스키마·권한 오류, Ctrl+C, EOF, 저장 실패) | [RUN_LOG 4장](RUN_LOG.md#4-예외-흐름-사례) |
+| 2 | 입력 실패 문구의 통일성 | 문구 형식을 `⚠️ {문제}. {조치}.`로 정하고 어긋난 2곳 코드 수정, 빈 목록 안내도 통일 | README 4장 "안내 문구 형식", `input_utils.py`, `quiz_game.py` |
+| 3 | 동시 실행 시 덮어쓰기 위험 | 운영 지침(한 폴더 한 실행, 폴더 분리, 실행 전 복사, 복구 방법, 규모 확대 시 잠금 파일) | README 6-8 |
+| 4 | 기본 퀴즈 교체 절차 | 수정 위치 → 테스트 → state.json 삭제 후 실행의 3단계 절차 | README 2장 "기본 퀴즈 교체 절차" |
+| 5 | 원격 접근 실패 시 확인 방법 | `git ls-remote` 확인법, 증상별 점검표(404/403/네트워크/HTTP 400) | [GIT_EVIDENCE 1장](GIT_EVIDENCE.md#1-원격-저장소) |
+| 6 | 병합별 목적·범위 요약 | 병합 커밋 6개별 브랜치·목적·포함 커밋 표 | [GIT_EVIDENCE 3장](GIT_EVIDENCE.md#3-브랜치와-병합-기록) |
+| 7 | 스크린샷 캡션 부족 | 모든 스크린샷에 "그림 N." 캡션, clone/pull 전 과정 스크린샷 추가 | README 7장 그림 1~9 |
+| 8 | 클래스 책임 경계 예시 | "하는 일 / 하지 않는 일" 표와 한 판 종료 시 역할 분담 예시 | README 5-2 |
+| 9 | 테스트와 책임 연결 | 테스트 파일 7개 ↔ 검증 책임 ↔ 개수 ↔ 대표 테스트 매핑 표 | README 5-5 |
+| 10 | 쓰기 시점 요약 | 시점별 읽기/쓰기/코드 한눈에 보기 표 | README 6-1 |
+| 11 | Ctrl+C 중 저장 실패 사례 | 쓰기 금지 폴더에서 실제 재현한 로그. 그 과정에서 **추가·삭제가 저장된 것처럼 보이던 문제를 발견해 수정**("이번 실행 중에만 유지" 안내 + 테스트) | [RUN_LOG 4-8](RUN_LOG.md#4-8-저장-불가-상태에서-퀴즈-추가--ctrlc), `quiz_game._save_or_warn_unsaved` |
+| 12 | 커밋 단위 수치 기준 | 권장 "파일 1~3개, 150줄 이내"와 실측(중앙값 1파일·37줄, 90%가 131줄 이하) | README 9-2 |
+| 13 | 객체지향 진입 장벽 | Quick start 예시(실행해서 결과를 확인한 코드) | README 5-3 |
+| 14 | SQLite 전환 비용 | 파일·테스트·문서별 전환 체크리스트 | README 6-6 |
+| 15 | 오류 알림 형식 표준 | 아이콘별 종류·수준·형식·예시 표 (경고/오류/안내/정보/완료) | README 4장 "안내 문구 형식" |
+| 16 | 브랜치 이름·리뷰 지침 | 이름 규칙, 작업 흐름, 금지 사항, 병합 전 리뷰 체크리스트 한 페이지 | [CONTRIBUTING.md](CONTRIBUTING.md) |
+| 17 | 버전 업 마이그레이션 예시 | v1 → v2 변환 흐름도와 `migrate_v1_to_v2` 예시, 함께 바꿀 곳 | README 6-9 |
+| 18 | 기록 수별 크기·시간 수치 | **실측** 표(0~100,000건)와 측정 스크립트, 대안 적용 시점(약 1만 건) | README 6-7, `scripts/benchmark_storage.py` |
+| 19 | 백업 보관 수·복구 테스트 | 보관 정책(최근 1개)과 확장 방법, 자동·수동 복구 테스트 절차, 테스트 2개 추가 | README 6-5, `tests/test_storage.py` |
+| 20 | 대형 변경 리스크·체크리스트 | 대형 변경 4종의 영향·리스크·완화 표, 테스트 업데이트를 포함한 공통 체크리스트 | README 8장 |
+
+**코드·테스트 변경 요약** (2차 보완)
+- `Refactor`: 입력 오류 문구 통일(`input_utils.read_text`, `QuizGame._confirm`), 빈 목록 안내 통일
+- `Fix`: 저장 실패 시 추가·삭제 결과가 이번 실행에만 유지된다는 안내 추가 (`_save_or_warn_unsaved`)
+- `Test`: 백업 보존 정책, 수동 복구, 저장 실패 안내 테스트 → 총 45개
+- `Chore`: `scripts/benchmark_storage.py`
+
+**예상 질문**
+- *Q. 문구를 왜 표준화했나요?* → 같은 종류의 오류가 화면마다 다르게 보이면 사용자가 무엇을 해야 할지 헷갈립니다. 입력 오류 문구는 `read_int`/`read_text`/`_confirm` 세 곳에서만 만들고, 모두 "문제 → 조치" 순서를 지킵니다.
+- *Q. 1만 건이 기준인 이유는?* → 실측에서 1만 건일 때 저장이 약 0.1초로, 사람이 지연을 느끼기 시작하는 수준입니다. 매 판 저장하는 구조라 이 시점부터 상한·분리·DB를 검토합니다.
+- *Q. 저장 실패를 어떻게 재현했나요?* → 폴더를 쓰기 금지(`chmod 555`)로 바꿔 임시 파일 생성이 실패하게 만들었고, 실행 후 기존 `state.json`이 그대로인 것까지 확인했습니다.
