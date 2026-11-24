@@ -35,7 +35,8 @@ def check_backup(backup_path: Path) -> tuple[bool, str]:
         return False, f"형식 오류: {error} → 해당 부분을 고친 뒤 다시 검사하세요."
     except OSError as error:
         return False, f"파일을 읽을 수 없습니다: {error}"
-    return True, f"정상입니다. (퀴즈 {len(state['quizzes'])}개, 기록 {len(state['history'])}건, 최고점수 {state['best_score']})"
+    best = f"{state['best_score']}점" if state["best_score"] is not None else "기록 없음"
+    return True, f"정상입니다. (퀴즈 {len(state['quizzes'])}개, 기록 {len(state['history'])}건, 최고점수 {best})"
 
 
 def restore(state_path: Path) -> tuple[bool, str]:
