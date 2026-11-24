@@ -46,6 +46,14 @@ class QuizGameRunTest(unittest.TestCase):
         self.assertIn("입력이 중단되어 프로그램을 종료합니다", output)
         self.assertTrue(self.state_path.exists())
 
+    def test_add_quiz_warns_when_save_fails(self) -> None:
+        with patch.object(self.game.storage, "save", return_value=False):
+            output = self.run_game(["2", "새 문제", "가", "나", "다", "라", "1", "", "7"])
+
+        self.assertIn("퀴즈가 추가되었습니다", output)
+        self.assertIn("저장하지 못했습니다", output)
+        self.assertIn("추가한 퀴즈는 이번 실행 중에만 유지되며", output)
+
     def test_added_quiz_persists_after_restart(self) -> None:
         self.run_game(["2", "새 문제", "가", "나", "다", "라", "3", "", "7"])
 

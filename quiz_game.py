@@ -102,8 +102,8 @@ class QuizGame:
         hint = read_line("힌트 (없으면 Enter): ")
 
         self.quizzes.append(Quiz(question, choices, answer, hint))
-        self.save()
-        print(f"\n✅ 퀴즈가 추가되었습니다! (총 {len(self.quizzes)}개)\n")
+        print(f"\n✅ 퀴즈가 추가되었습니다! (총 {len(self.quizzes)}개)")
+        self._save_or_warn_unsaved("추가한 퀴즈")
 
     def list_quizzes(self) -> bool:
         """등록된 퀴즈 문제를 번호와 함께 출력한다. 퀴즈가 없으면 False."""
@@ -150,8 +150,14 @@ class QuizGame:
             return
 
         self.quizzes.pop(number - 1)
-        self.save()
-        print(f"🗑️ 퀴즈가 삭제되었습니다. (남은 퀴즈 {len(self.quizzes)}개)\n")
+        print(f"🗑️ 퀴즈가 삭제되었습니다. (남은 퀴즈 {len(self.quizzes)}개)")
+        self._save_or_warn_unsaved("삭제 결과")
+
+    def _save_or_warn_unsaved(self, what: str) -> None:
+        """변경 직후 저장하고, 실패하면 이번 실행에만 반영됐다는 점을 알린다."""
+        if not self.save():
+            print(f"   → {what}는 이번 실행 중에만 유지되며, 종료하면 반영되지 않습니다.")
+        print()
 
     def show_history(self) -> None:
         """지금까지의 게임 기록을 최신순으로 보여준다."""
