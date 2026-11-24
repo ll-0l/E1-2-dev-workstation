@@ -4,7 +4,7 @@
   python3 scripts/restore_backup.py             # .bak이 지금 바로 불러올 수 있는 상태인지 검사만 한다
   python3 scripts/restore_backup.py --restore   # 정상이면 현재 state.json을 보관하고 .bak으로 되돌린다
 
-- 프로그램이 손상을 감지하면 원본을 state.json.bak으로 복사해 둔다(README 6-5).
+- 프로그램이 손상을 감지하면 원본을 state.json.bak으로 복사해 둔다(docs/DATA.md 5장).
 - .bak 자체가 손상돼 있으면 어느 부분이 틀렸는지 알려 주고, 복원하지 않는다.
 - 복원 전에 현재 state.json은 state.json.before-restore로 보관한다(되돌리기 가능).
 """
