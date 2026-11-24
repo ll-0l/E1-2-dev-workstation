@@ -349,6 +349,7 @@ StateStorage.load()
 2. 복제한 폴더에서 README에 이 섹션을 추가하고 commit → push 했습니다 (`e0c3f89 Docs: README에 clone/pull 실습 기록 추가`).
 3. 원래 작업 폴더에서 `git pull`로 받아 Fast-forward로 반영된 것을 확인했습니다 (reflog: `e0c3f89 HEAD@{..}: pull: Fast-forward`).
 4. 재평가용으로 같은 과정을 한 번 더 수행하고 모든 명령 출력을 [docs/GIT_EVIDENCE.md](docs/GIT_EVIDENCE.md)에 남겼습니다.
+5. (2차 실습 2026-11-24) 이 줄은 clone한 폴더에서 추가해 push한 뒤, 원래 작업 폴더에서 `git pull`로 받아온 것입니다.
 
 ### 9-5. 협업 방식
 AI 코딩 에이전트 3개(Claude Code 2개, Codex 1개)가 담당 파일을 나눠 각자 clone한 폴더에서 브랜치로 작업했고, Lead가 검토 후 `main`에 병합했습니다. 역할과 인터페이스 약속은 [AGENTS.md](AGENTS.md)에 있습니다.
