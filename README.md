@@ -6,7 +6,7 @@ Python 표준 라이브러리만으로 만들었고, 추가한 퀴즈와 점수 
 - GitHub 저장소: https://github.com/ll-0l/E1-2-dev-workstation
 - 실행 로그(텍스트): [docs/RUN_LOG.md](docs/RUN_LOG.md)
 - Git 작업 증빙(텍스트): [docs/GIT_EVIDENCE.md](docs/GIT_EVIDENCE.md)
-- 동료평가 대응표와 답변 정리: [docs/PEER_REVIEW.md](docs/PEER_REVIEW.md)
+- 동료평가 대응표와 답변 정리: [docs/PEER_REVIEW.md](docs/PEER_REVIEW.md) · 쉬운 말 버전: [docs/PEER_REVIEW_EASY.md](docs/PEER_REVIEW_EASY.md)
 
 ## 목차
 1. [프로젝트 개요](#1-프로젝트-개요)
@@ -167,6 +167,7 @@ E1-2-dev-workstation/
 │   ├── RUN_LOG.md       # 실행 화면 텍스트 로그
 │   ├── GIT_EVIDENCE.md  # 원격 저장소 · 커밋 · 브랜치/병합 · clone/pull 텍스트 증빙
 │   ├── PEER_REVIEW.md   # 동료평가 항목 대응표와 답변 정리
+│   ├── PEER_REVIEW_EASY.md  # 동료평가 쉬운 말 버전 (비유·시연 대본·용어 사전)
 │   └── CONTRIBUTING.md  # 브랜치 이름 규칙과 병합 전 리뷰 체크리스트
 ├── AGENTS.md, CLAUDE.md # 개발 협업 규칙 (9장 참고)
 ├── .gitignore
