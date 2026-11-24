@@ -40,6 +40,19 @@ origin	https://github.com/ll-0l/E1-2-dev-workstation.git (fetch)
 origin	https://github.com/ll-0l/E1-2-dev-workstation.git (push)
 ```
 
+### 주요 커밋 해시
+원격에 접속할 수 없을 때도 clone한 사본이나 제출물에서 `git cat-file -t <해시>`(→ `commit`이면 존재) 또는 `git show <해시>`로 같은 커밋인지 대조할 수 있습니다.
+
+| 해시 | 의미 |
+|---|---|
+| `f7be1ec` | 최초 커밋 (`git init` 후 첫 commit) |
+| `808c6d1` | 첫 브랜치 병합 (`feature/quiz-model`) |
+| `d687507` | 퀴즈 풀기 브랜치 병합 (`feature/play-quiz`) |
+| `c5a0234` | state.json 저장 기능 병합 (`feature/storage`) |
+| `e0c3f89` | clone한 폴더에서 만든 커밋 (clone/pull 1차 실습) |
+| `c1b3d90` | clone/pull 2차 실습 커밋 |
+| `5224fb9` | 스키마 마이그레이션·보호 모드 추가 |
+
 ## 2. 커밋 수와 전체 이력
 
 > 아래 출력은 최초 작성 시점(`c1b3d90`) 기준입니다. 이 문장을 마지막으로 고친 커밋(2026-11-24, Codex 검토 반영)까지 포함하면 의미 있는 커밋은 **53개**이며, 이후 커밋이 더해지면 늘어납니다. 언제든 `git log --no-merges --oneline | wc -l`로 최신 값을 확인할 수 있습니다.
