@@ -4,7 +4,7 @@ import random
 from datetime import datetime
 
 import input_utils
-from quiz import Quiz
+from quiz import CHOICE_COUNT, Quiz
 
 
 class QuizSession:
@@ -46,9 +46,9 @@ class QuizSession:
 
             while True:
                 user_input = input_utils.read_int(
-                    f"정답 입력 (1-4, 힌트: {self.HINT_KEY}): ",
+                    f"정답 입력 (1-{CHOICE_COUNT}, 힌트: {self.HINT_KEY}): ",
                     1,
-                    4,
+                    CHOICE_COUNT,
                     allow=(self.HINT_KEY,),
                 )
                 if user_input != self.HINT_KEY:
