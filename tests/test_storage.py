@@ -79,6 +79,55 @@ class StateStorageTest(unittest.TestCase):
         self.assertEqual("loaded", status)
         self.assertEqual(["가", "나", "다", "라"], state["quizzes"][0]["choices"])
 
+    # --- 스키마 버전 / 마이그레이션 -------------------------------------------
+    def test_migration_upgrades_old_version_step_by_step(self) -> None:
+        def v1_to_v2(state: dict) -> dict:
+            state["version"] = 2
+            state["history"] = []  # 예: v2에서 기록 형식이 바뀌어 초기화한다고 가정
+            return state
+
+        old = {"version": 1, "quizzes": [valid_quiz()], "history": [valid_record()]}
+        self.path.write_text(json.dumps(old), encoding="utf-8")
+        with patch("storage.CURRENT_VERSION", 2), patch.dict("storage.MIGRATIONS", {1: v1_to_v2}):
+            state, status = self.storage.load()
+
+        self.assertEqual("loaded", status)
+        self.assertEqual(2, state["version"])
+        self.assertEqual([], state["history"])
+        self.assertFalse(Path(f"{self.path}.bak").exists())
+
+    def test_missing_migration_step_is_corrupted(self) -> None:
+        self.path.write_text(json.dumps({"version": 1, "quizzes": [valid_quiz()]}), encoding="utf-8")
+        with patch("storage.CURRENT_VERSION", 3), patch.dict("storage.MIGRATIONS", {1: lambda s: {**s, "version": 2}}):
+            self.assertEqual((None, "corrupted"), self.storage.load())
+
+    def test_future_version_is_unsupported_and_left_untouched(self) -> None:
+        raw = json.dumps({"version": 99, "quizzes": [valid_quiz()], "new_field": "미래 데이터"}, ensure_ascii=False)
+        self.path.write_text(raw, encoding="utf-8")
+
+        self.assertEqual((None, "unsupported"), self.storage.load())
+        self.assertEqual(raw, self.path.read_text(encoding="utf-8"))   # 원본 그대로
+        self.assertFalse(Path(f"{self.path}.bak").exists())          # 손상으로 취급하지 않음
+
+    def test_version_below_one_is_corrupted(self) -> None:
+        self.path.write_text(json.dumps({"version": 0, "quizzes": []}), encoding="utf-8")
+        self.assertEqual((None, "corrupted"), self.storage.load())
+
+    # --- 강제 종료 후 남은 임시 파일 ------------------------------------------
+    def test_leftover_temp_file_from_crash_is_ignored_then_replaced(self) -> None:
+        # 저장 도중 강제 종료되어 반쯤 쓴 .tmp가 남았지만 state.json은 이전 상태 그대로인 상황
+        self.assertTrue(self.storage.save({"quizzes": [valid_quiz()]}))
+        temp_path = Path(f"{self.path}.tmp")
+        temp_path.write_text('{"quizzes": [{"question": "반쯤 쓰', encoding="utf-8")
+
+        state, status = self.storage.load()
+        self.assertEqual("loaded", status)                     # 깨진 .tmp는 읽지 않음
+        self.assertEqual("문제", state["quizzes"][0]["question"])
+
+        self.assertTrue(self.storage.save(state))               # 다음 저장이 .tmp를 덮어쓰고 교체
+        self.assertFalse(temp_path.exists())
+        self.assertEqual("loaded", self.storage.load()[1])
+
     def test_bool_best_score_is_corrupted(self) -> None:
         state = {"quizzes": [valid_quiz()], "best_score": True}
         self.path.write_text(json.dumps(state), encoding="utf-8")

@@ -4,7 +4,7 @@ from default_quizzes import get_default_quizzes
 from input_utils import read_int, read_line, read_text
 from quiz import CHOICE_COUNT, Quiz
 from quiz_session import QuizSession
-from storage import StateStorage
+from storage import CURRENT_VERSION, StateStorage
 
 LINE = "=" * 40
 THIN_LINE = "-" * 40
@@ -29,6 +29,7 @@ class QuizGame:
         self.best_score: int | None = None      # 0~100점, 아직 플레이 전이면 None
         self.best_record: dict | None = None    # 최고 점수를 기록한 게임의 상세 기록
         self.history: list[dict] = []           # 모든 게임 기록
+        self.read_only = False                  # 보호 모드: 기존 파일을 지키기 위해 저장하지 않음
         self.running = True
         # (메뉴 이름, 실행할 메서드) — 번호는 순서대로 1부터 부여
         self.menu_items = [
@@ -250,12 +251,22 @@ class QuizGame:
             print("⚠️ 데이터 파일이 손상되어 기본 퀴즈로 복구합니다. (원본은 state.json.bak에 백업)")
             self._reset_state()
             self.save()
+        elif status == "unsupported":
+            # 더 새로운 버전의 파일: 손상이 아니므로 백업·덮어쓰기 없이 보호 모드로 실행
+            self.read_only = True
+            print("⚠️ 데이터 파일이 더 새로운 버전의 프로그램에서 만들어졌습니다. "
+                  "(파일 보호를 위해 기본 퀴즈로 시작하고 이번 실행 내용은 저장하지 않습니다)")
         else:
-            # 읽기 오류: 기존 파일을 덮어쓰지 않도록 저장하지 않는다
-            print("⚠️ 데이터 파일을 읽을 수 없어 기본 퀴즈로 시작합니다. (이번 실행 내용은 저장되지 않을 수 있습니다)")
+            # 읽기 오류: 읽지 못한 파일을 덮어쓰지 않도록 보호 모드로 실행
+            self.read_only = True
+            print("⚠️ 데이터 파일을 읽을 수 없어 기본 퀴즈로 시작합니다. "
+                  "(기존 파일 보호를 위해 이번 실행 내용은 저장하지 않습니다)")
 
     def save(self) -> bool:
         """현재 상태를 state.json에 저장한다. 실패하면 안내 후 False."""
+        if self.read_only:
+            print("⚠️ 보호 모드라 파일에 저장하지 않았습니다. 파일 문제를 해결한 뒤 다시 실행하세요.")
+            return False
         if self.storage.save(self.to_state()):
             return True
         print(
@@ -268,7 +279,7 @@ class QuizGame:
     def to_state(self) -> dict:
         """현재 게임 상태를 state.json 스키마의 dict로 변환한다."""
         return {
-            "version": 1,
+            "version": CURRENT_VERSION,
             "quizzes": [quiz.to_dict() for quiz in self.quizzes],
             "best_score": self.best_score,
             "best_record": self.best_record,

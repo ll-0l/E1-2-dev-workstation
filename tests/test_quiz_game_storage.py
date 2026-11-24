@@ -88,6 +88,32 @@ class QuizGameStorageTest(unittest.TestCase):
         storage.save.assert_not_called()
         self.assertIn("읽을 수 없어", mock_print.call_args.args[0])
 
+    def test_read_error_blocks_all_later_saves(self) -> None:
+        storage = Mock()
+        storage.load.return_value = (None, "error")
+        game = QuizGame(storage=storage)
+
+        with patch("builtins.print"):
+            game.load()
+            saved = game.save()  # 이후 퀴즈 추가·종료 때의 저장도 막혀야 함
+
+        self.assertTrue(game.read_only)
+        self.assertFalse(saved)
+        storage.save.assert_not_called()
+
+    def test_unsupported_version_enters_read_only_mode(self) -> None:
+        storage = Mock()
+        storage.load.return_value = (None, "unsupported")
+        game = QuizGame(storage=storage)
+
+        with patch("builtins.print") as mock_print:
+            game.load()
+            game.save()
+
+        self.assertTrue(game.read_only)
+        storage.save.assert_not_called()
+        self.assertTrue(any("더 새로운 버전" in str(c.args[0]) for c in mock_print.call_args_list))
+
     def test_save_serializes_quizzes_and_reports_failure(self) -> None:
         storage = Mock()
         storage.save.return_value = False

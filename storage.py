@@ -6,10 +6,21 @@ import json
 import os
 import shutil
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 
 DEFAULT_STATE_PATH = Path(__file__).resolve().parent / "state.json"
+
+# 현재 프로그램이 쓰는 state.json 형식 버전
+CURRENT_VERSION = 1
+
+# 버전 업 변환 함수: {이전 버전: 함수(state) -> 다음 버전 state}
+# 예) 2로 올릴 때 {1: migrate_v1_to_v2}를 등록하면 v1 파일을 읽을 때 자동 변환된다.
+MIGRATIONS: dict[int, Callable[[dict], dict]] = {}
+
+
+class UnsupportedVersionError(Exception):
+    """현재 프로그램보다 새로운 버전의 파일. 손상이 아니므로 백업·덮어쓰기 대상이 아니다."""
 
 
 class StateStorage:
@@ -25,6 +36,8 @@ class StateStorage:
             return self._normalize_state(state), "loaded"
         except FileNotFoundError:
             return None, "missing"
+        except UnsupportedVersionError:
+            return None, "unsupported"
         except (json.JSONDecodeError, ValueError, TypeError, KeyError):
             if not self._backup_corrupted_file():
                 return None, "error"
@@ -42,7 +55,7 @@ class StateStorage:
                 state_file.write("\n")
             os.replace(temp_path, self.path)
             return True
-        except (OSError, ValueError, TypeError, KeyError):
+        except (OSError, ValueError, TypeError, KeyError, UnsupportedVersionError):
             try:
                 temp_path.unlink(missing_ok=True)
             except OSError:
@@ -64,9 +77,7 @@ class StateStorage:
         if not isinstance(state, dict):
             raise ValueError("상태 데이터는 dict여야 합니다.")
 
-        version = state.get("version", 1)
-        if isinstance(version, bool) or not isinstance(version, int) or version != 1:
-            raise ValueError("지원하지 않는 상태 데이터 버전입니다.")
+        state = cls._migrate(state)
 
         quizzes = state.get("quizzes")
         if not isinstance(quizzes, list):
@@ -89,12 +100,30 @@ class StateStorage:
         normalized_history = [cls._normalize_record(item) for item in history]
 
         return {
-            "version": version,
+            "version": CURRENT_VERSION,
             "quizzes": normalized_quizzes,
             "best_score": best_score,
             "best_record": best_record,
             "history": normalized_history,
         }
+
+    @staticmethod
+    def _migrate(state: dict) -> dict:
+        """구버전 state를 MIGRATIONS로 한 단계씩 CURRENT_VERSION까지 올린다."""
+        version = state.get("version", 1)  # version 키가 없던 초기 파일은 v1로 본다
+        if isinstance(version, bool) or not isinstance(version, int) or version < 1:
+            raise ValueError("version은 1 이상의 정수여야 합니다.")
+        if version > CURRENT_VERSION:
+            raise UnsupportedVersionError(f"version {version} 파일은 이 프로그램(v{CURRENT_VERSION})보다 새롭습니다.")
+        while version < CURRENT_VERSION:
+            migrate = MIGRATIONS.get(version)
+            if migrate is None:
+                raise ValueError(f"version {version} → {version + 1} 변환 방법이 없습니다.")
+            state = migrate(dict(state))
+            if state.get("version") != version + 1:
+                raise ValueError("변환 함수는 version을 정확히 1 올려야 합니다.")
+            version += 1
+        return state
 
     @staticmethod
     def _normalize_quiz(quiz: Any) -> dict:
