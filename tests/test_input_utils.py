@@ -14,7 +14,7 @@ class InputUtilsTest(unittest.TestCase):
     def test_read_text_retries_empty_input(self, _mock_input) -> None:
         with patch("builtins.print") as mock_print:
             self.assertEqual("답", input_utils.read_text("입력: "))
-        mock_print.assert_called_once_with("⚠️ 내용을 입력하세요.")
+        mock_print.assert_called_once_with("⚠️ 입력이 비어 있습니다. 내용을 입력하세요.")
 
     @patch("builtins.input", side_effect=["", "abc", "5", " H "])
     def test_read_int_retries_and_accepts_keyword_case_insensitively(self, _mock_input) -> None:

@@ -16,7 +16,7 @@ def read_text(prompt: str) -> str:
         text = read_line(prompt)
         if text:
             return text
-        print("⚠️ 내용을 입력하세요.")
+        print("⚠️ 입력이 비어 있습니다. 내용을 입력하세요.")
 
 
 def read_int(

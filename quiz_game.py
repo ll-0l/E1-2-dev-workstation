@@ -205,7 +205,7 @@ class QuizGame:
                 return True
             if answer in ("n", "no", "ㅜ"):
                 return False
-            print("⚠️ y 또는 n을 입력하세요.")
+            print("⚠️ 잘못된 입력입니다. y 또는 n을 입력하세요.")
 
     def _format_history_row(self, record: dict) -> str:
         answered = f"{record['correct']}/{record['total']}"

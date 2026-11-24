@@ -37,7 +37,7 @@
 def read_line(prompt: str) -> str
     # input() 후 strip. KeyboardInterrupt/EOFError는 잡지 않고 그대로 전파 (QuizGame.run이 최상위에서 처리)
 def read_text(prompt: str) -> str
-    # 빈 입력이면 "⚠️ 내용을 입력하세요." 출력 후 재입력
+    # 빈 입력이면 "⚠️ 입력이 비어 있습니다. 내용을 입력하세요." 출력 후 재입력
 def read_int(prompt: str, min_value: int, max_value: int, allow: tuple[str, ...] = ()) -> int | str
     # 빈 입력 / 숫자 변환 실패 / 범위 밖 → 안내 메시지 후 재입력
     # allow에 포함된 문자열(대소문자 무시, 예: "h")을 입력하면 그 소문자 문자열을 그대로 반환
