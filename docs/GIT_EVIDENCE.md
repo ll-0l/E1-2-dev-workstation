@@ -1,7 +1,10 @@
 # Git 작업 증빙 (텍스트)
 
 이미지를 볼 수 없는 환경에서도 확인할 수 있도록, Git 명령의 **실행 결과 원문**을 그대로 옮겼습니다.
-스크린샷 버전은 [screenshots/git_log.png](screenshots/git_log.png), [screenshots/dev_env.png](screenshots/dev_env.png)에 있습니다.
+스크린샷 버전:
+- [screenshots/git_log.png](screenshots/git_log.png) — `git log --oneline --graph` 전체 (브랜치 6개의 생성·병합 그래프)
+- [screenshots/clone_pull.png](screenshots/clone_pull.png) — 4-2절 clone → commit → push → pull 전 과정
+- [screenshots/dev_env.png](screenshots/dev_env.png) — Git 버전, 사용자 이름, `git remote -v`, 브랜치 목록
 
 - 작성 시점 HEAD: `c1b3d90 Docs: clone 폴더에서 clone/pull 2차 실습 기록 추가`
 - 이 문서를 추가하는 커밋 이후의 기록은 GitHub에서 `git log`로 확인할 수 있습니다.
@@ -18,6 +21,18 @@
 ## 1. 원격 저장소
 
 - URL: https://github.com/ll-0l/E1-2-dev-workstation (Public)
+- 브라우저 없이 확인: `git ls-remote https://github.com/ll-0l/E1-2-dev-workstation.git main` → `main` 브랜치의 최신 커밋 해시가 출력되면 공개 저장소에 정상 접근된 것입니다.
+
+**원격 저장소에 접근이 안 될 때 확인할 것**
+| 증상 | 확인 항목 | 확인 방법 |
+|---|---|---|
+| `Repository not found` / 404 | URL 오타, 저장소 이름·계정 변경, 비공개 전환 여부 | `git remote -v`의 주소와 GitHub 페이지 주소 비교, 저장소 Settings의 공개 여부 |
+| `Authentication failed` / 403 (push 시) | 로그인 계정과 저장소 권한, 토큰 만료 | `gh auth status`, 저장소 Collaborators 권한 |
+| `Could not resolve host` / 시간 초과 | 네트워크, 프록시, 방화벽 | `ping github.com`, 다른 네트워크에서 재시도 |
+| clone은 되는데 최신 커밋이 안 보임 | 원격 변경을 아직 안 받음 | `git fetch` 후 `git log origin/main --oneline -3` |
+| push 중 `HTTP 400` / 연결 끊김 | 큰 파일(이미지 등) 전송 버퍼 부족 | `git config http.postBuffer 157286400` 후 재시도 (이 저장소에서 스크린샷 push 때 실제로 발생·해결) |
+
+원격 접근이 어려운 상황에서도 이 문서의 2~4장 출력 원문과 [screenshots/git_log.png](screenshots/git_log.png)로 이력을 확인할 수 있습니다.
 
 ```text
 $ git remote -v
@@ -26,6 +41,8 @@ origin	https://github.com/ll-0l/E1-2-dev-workstation.git (push)
 ```
 
 ## 2. 커밋 수와 전체 이력
+
+> 아래 출력은 최초 작성 시점(`c1b3d90`) 기준입니다. 재평가 보완 작업 후 이 문서를 갱신한 커밋까지 포함하면 의미 있는 커밋은 **48개**입니다. 최신 값은 `git log --no-merges --oneline | wc -l`로 확인합니다.
 
 ```text
 $ git log --no-merges --oneline | wc -l   # 의미 있는 커밋 수 (병합 커밋 제외)
@@ -120,6 +137,17 @@ c5a0234 Merge branch 'feature/storage'
 d687507 Merge branch 'feature/play-quiz'
 808c6d1 Merge branch 'feature/quiz-model'
 ```
+
+**병합 커밋별 요약** — 각 병합이 무엇을 `main`에 가져왔는지 (`git log <병합>^1..<병합>^2`로 확인)
+
+| 병합 커밋 | 브랜치 | 목적 | 포함 커밋 |
+|---|---|---|---|
+| `808c6d1` | `feature/quiz-model` | 퀴즈 데이터 모델 도입 | 2개: `Feat: Quiz 클래스 구현`, `Feat: 2026 신조어 기본 퀴즈 데이터 12개 작성` |
+| `d687507` | `feature/play-quiz` | 퀴즈 풀기 기능 (과제의 브랜치 작업 요구) | 2개: `Feat: 퀴즈 풀기 세션 구현 (랜덤 출제/힌트/채점)`, `Feat: 메뉴에 퀴즈 풀기 기능 연결` |
+| `c5a0234` | `feature/storage` | state.json 영속성 | 3개: `Feat: StateStorage 구현`, `Test: 단위 테스트 추가`, `Feat: QuizGame에 저장/불러오기 연동` |
+| `66ed4f7` | `test/storage-integration` | 저장 연동 회귀 테스트 | 1개: `Test: QuizGame 저장 연동 회귀 테스트 추가` |
+| `859225d` | `fix/player-qa` | 사용자 QA 결과 반영 | 3개: `Fix: 점수 반올림을 사사오입으로 통일`, `Fix: 오답 안내 따옴표 중복 수정`, `Fix: 기본 퀴즈 문구 다듬기` |
+| `da98498` | `test/quiz-management` | 삭제·기록 기능 회귀 테스트 | 2개: `Test: 퀴즈 관리와 히스토리 회귀 테스트 추가`, `Test: 점수 반올림 계약 경계값 검증` (병합 직후 `f75614e`에서 사사오입 기준으로 기대값 수정) |
 
 브랜치 생성(`checkout -b`)과 병합을 실행한 기록 (원본 작업 폴더의 `git reflog` 발췌):
 
